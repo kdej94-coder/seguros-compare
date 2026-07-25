@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SegurosCompare — Comparador Automático de Cotizaciones</title>
+    <meta name="description" content="Herramienta open source para comparar automáticamente cotizaciones de seguros a partir de archivos PDF.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="brand-text">
+                    <h2>SegurosCompare</h2>
+                    <span>Comparador de Cotizaciones</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="tab-recomendacion">
+                    <i class="fa-solid fa-star"></i>
+                    <span>Mejor Opción</span>
+                    <span class="badge badge-best">Top</span>
+                </button>
+                <button class="nav-item" data-tab="tab-resumen">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <span>Resumen General</span>
+                </button>
+                <button class="nav-item" data-tab="tab-coberturas">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Coberturas</span>
+                </button>
+                <button class="nav-item" data-tab="tab-sumas">
+                    <i class="fa-solid fa-vault"></i>
+                    <span>Sumas Aseguradas</span>
+                </button>
+            </nav>
+
+            <div class="upload-widget">
+                <h3><i class="fa-solid fa-file-pdf"></i> Cargar Cotizaciones</h3>
+                <p>Suba los archivos PDF de las aseguradoras para analizar automáticamente.</p>
+                <input type="file" id="pdfInput" multiple accept=".pdf" style="display:none">
+                <button class="btn btn-upload" id="btnTriggerUpload">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Subir PDFs
+                </button>
+                <button class="btn btn-clear" id="btnClear" style="display:none;">
+                    <i class="fa-solid fa-trash-can"></i> Limpiar Datos
+                </button>
+                <div id="uploadStatus" class="upload-status"></div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-info">
+                    <span class="tag-client" id="tagClient"><i class="fa-solid fa-building"></i> SegurosCompare — Open Source</span>
+                    <h1>Estudio Comparativo de Cotizaciones</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline" id="btnExportPDF">
+                        <i class="fa-solid fa-print"></i> Exportar
+                    </button>
+                </div>
+            </header>
+
+            <!-- Info Banner (hidden until data loaded) -->
+            <section class="general-info-banner" id="infoBanner" style="display:none;">
+                <div class="info-card">
+                    <i class="fa-solid fa-user-tie info-icon"></i>
+                    <div>
+                        <span class="lbl">Asegurado</span>
+                        <strong id="infoAsegurado">—</strong>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fa-solid fa-location-dot info-icon"></i>
+                    <div>
+                        <span class="lbl">Ubicación</span>
+                        <strong id="infoDomicilio">—</strong>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fa-solid fa-briefcase info-icon"></i>
+                    <div>
+                        <span class="lbl">Giro</span>
+                        <strong id="infoGiro">—</strong>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fa-solid fa-file-lines info-icon"></i>
+                    <div>
+                        <span class="lbl">Propuestas Cargadas</span>
+                        <strong id="infoTotal">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: MEJOR OPCIÓN -->
+            <div id="tab-recomendacion" class="tab-panel active">
+                <div id="winnerEmpty" class="empty-state">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                    <h3>Sin datos aún</h3>
+                    <p>Suba al menos 2 cotizaciones en PDF desde el panel izquierdo para generar la recomendación de mejor opción.</p>
+                </div>
+                <div id="winnerContent" style="display:none;"></div>
+            </div>
+
+            <!-- TAB: RESUMEN GENERAL -->
+            <div id="tab-resumen" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-chart-bar"></i> Resumen General de Propuestas</h2>
+                    <p>Datos extraídos automáticamente de los PDFs cargados.</p>
+                </div>
+                <div id="resumenEmpty" class="empty-state">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h3>Sin propuestas cargadas</h3>
+                    <p>Cargue archivos PDF de cotizaciones para ver el resumen comparativo aquí.</p>
+                </div>
+                <div id="resumenContent" style="display:none;">
+                    <div class="proposals-overview" id="proposalsGrid"></div>
+                </div>
+            </div>
+
+            <!-- TAB: COBERTURAS -->
+            <div id="tab-coberturas" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-layer-group"></i> Matriz Comparativa de Coberturas</h2>
+                    <p>Coberturas identificadas en cada cotización PDF.</p>
+                </div>
+                <div id="coberturasEmpty" class="empty-state">
+                    <i class="fa-solid fa-table-cells"></i>
+                    <h3>Sin datos de coberturas</h3>
+                    <p>La matriz se llenará automáticamente al cargar los PDF de las aseguradoras.</p>
+                </div>
+                <div id="coberturasContent" style="display:none;">
+                    <div class="table-card table-responsive">
+                        <table class="custom-table" id="tablaCoberturas">
+                            <thead id="coberturasHead"></thead>
+                            <tbody id="coberturasBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: SUMAS ASEGURADAS -->
+            <div id="tab-sumas" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-vault"></i> Sumas Aseguradas Comparativas</h2>
+                    <p>Valores extraídos de las cotizaciones cargadas.</p>
+                </div>
+                <div id="sumasEmpty" class="empty-state">
+                    <i class="fa-solid fa-coins"></i>
+                    <h3>Sin datos de sumas</h3>
+                    <p>Cargue cotizaciones PDF para ver la comparativa de sumas aseguradas.</p>
+                </div>
+                <div id="sumasContent" style="display:none;">
+                    <div class="table-card table-responsive">
+                        <table class="custom-table" id="tablaSumas">
+                            <thead id="sumasHead"></thead>
+                            <tbody id="sumasBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
