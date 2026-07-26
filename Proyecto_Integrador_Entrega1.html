@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Integrador - SegurosCompare (Universidad Tecmilenio)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004085;
+            --primary-light: #e8f4f8;
+            --accent: #28a745;
+            --dark: #212529;
+            --gray-light: #f8f9fa;
+            --border: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--dark);
+            background-color: #f4f6f9;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .document-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 60px 70px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+
+        /* Header / Cover Style */
+        .doc-header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 24px;
+            margin-bottom: 36px;
+        }
+
+        .institution-tag {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+
+        .doc-header h1 {
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: var(--gray-light);
+            padding: 16px 20px;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .meta-item strong {
+            color: var(--primary);
+        }
+
+        /* Content Headings */
+        h2 {
+            font-size: 18px;
+            color: var(--primary);
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 36px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 15px;
+            color: var(--dark);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p, li {
+            font-size: 13.5px;
+            color: #333;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        /* ─── FLOWCHART DIAGRAM STYLING (Standard Programming Symbols) ─── */
+        .flowchart-wrapper {
+            background: #fafafa;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 28px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flowchart-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* Flowchart Node Types */
+        .fc-node {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 12px 20px;
+            position: relative;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.06);
+            transition: all 0.2s ease;
+        }
+
+        /* Terminal (Start/End) -> Oval */
+        .fc-start-end {
+            background: #0d6efd;
+            color: #ffffff;
+            border: 2.5px solid #0a58ca;
+            border-radius: 30px;
+            min-width: 180px;
+            height: 44px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* Process -> Rectangle */
+        .fc-process {
+            background: #eef6ff;
+            color: #004085;
+            border: 2.5px solid #004085;
+            border-radius: 6px;
+            width: 280px;
+            min-height: 52px;
+            line-height: 1.3;
+        }
+
+        /* Decision -> Diamond (Rombo) */
+        .fc-decision-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .fc-diamond {
+            width: 120px;
+            height: 120px;
+            background: #fff3cd;
+            border: 2.5px solid #ffc107;
+            transform: rotate(45deg);
+            position: absolute;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.06);
+        }
+
+        .fc-diamond-text {
+            position: relative;
+            z-index: 2;
+            font-size: 11px;
+            font-weight: 800;
+            color: #856404;
+            text-align: center;
+            max-width: 110px;
+            line-height: 1.2;
+        }
+
+        /* Arrows and Labels */
+        .fc-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #495057;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 6px 0;
+        }
+
+        .fc-arrow-label {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #ffffff;
+            border: 1px solid #ced4da;
+            margin-bottom: 2px;
+        }
+
+        .label-yes { color: #198754; border-color: #198754; }
+        .label-no { color: #dc3545; border-color: #dc3545; }
+
+        /* Branching Layout */
+        .fc-branch-container {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .fc-branch-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12.5px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        .badge-priority {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .priority-high { background: #f8d7da; color: #721c24; }
+        .priority-medium { background: #fff3cd; color: #856404; }
+        .priority-low { background: #d1e7dd; color: #0f5132; }
+
+        /* Print Controls & Styles */
+        .print-btn-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-print {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .btn-print:hover {
+            background: #002b5c;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0;
+            }
+            .document-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .print-btn-bar {
+                display: none !important;
+            }
+            h2 {
+                page-break-after: avoid;
+            }
+            .flowchart-wrapper, table {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="print-btn-bar">
+            <button onclick="window.print()" class="btn-print">
+                🖨️ Imprimir / Guardar como PDF
+            </button>
+        </div>
+
+        <div class="document-container">
+            <!-- Document Header Table -->
+            <table style="width: 100%; border: 1.5px solid #000; border-collapse: collapse; margin-bottom: 30px; font-family: 'Inter', sans-serif;">
+                <tr>
+                    <td style="border: 1px solid #000; padding: 10px 14px; width: 68%; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Nombre:</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #000; margin-top: 6px;">Carlos de Jesus Colorado Quiroz</div>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 10px 14px; width: 32%; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Matrícula:</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #000; margin-top: 6px;">2631633</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Nombre del curso:</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #000; margin-top: 6px;">Taller de productividad basada en herramientas tecnológicas</div>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Nombre del profesor:</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #000; margin-top: 6px;">Rey Moisés Vásquez Hernández</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Módulo: <span style="font-weight: 700;">1</span></div>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-style: italic; font-weight: 700; color: #000;">Actividad: 2</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Fecha: <span style="font-weight: 700;">25/07/2026</span></div>
+                    </td>
+                </tr>
+            </table>
+
+            <h1 style="font-size: 22px; color: var(--primary); font-weight: 800; line-height: 1.3; margin-bottom: 24px; text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 12px;">
+                Sistema Web de Automatización y Comparación de Cotizaciones de Seguros (SegurosCompare)
+            </h1>
+
+            <!-- Section 1 -->
+            <section>
+                <h2>1. Definición de la Organización, Área, Justificación y Problemática</h2>
+
+                <h3>1.1 Organización Seleccionada</h3>
+                <p>
+                    El presente proyecto integrador se realiza para una <strong>Agencia y Promotoría de Seguros</strong> perteneciente al sector de servicios financieros y gestión patrimonial. La empresa cuenta con la aprobación explícita de su dirección operativa y área de tecnologías de información para compartir los requerimientos, código fuente y resultados del proyecto bajo el esquema de <strong>Código Libre (Open Source) en GitHub</strong> y con fines académicos para la Universidad Tecmilenio.
+                </p>
+
+                <h3>1.2 Justificación de la Elección</h3>
+                <p>La selección de esta organización responde a necesidades operativas reales y medibles:</p>
+                <ul>
+                    <li><strong>Alto volumen de cotizaciones:</strong> La agencia cotiza continuamente licitaciones y renovaciones de pólizas empresariales y de condominios con 3 a 8 aseguradoras simultáneamente (GNP, MAPFRE, INBURSA, CHUBB, Tokio Marine, entre otras).</li>
+                    <li><strong>Carga manual excesiva:</strong> Actualmente, los analistas deben leer manualmente archivos PDF de 6 a 30 páginas por cotización para vaciar más de 40 renglones de información en hojas de cálculo de Excel.</li>
+                    <li><strong>Riesgo de omisión patrimonial:</strong> La captura manual genera errores en la transcripción de deducibles, sublímites de remoción de escombros y exclusiones de coberturas críticas (como fenómenos hidrometeorológicos).</li>
+                </ul>
+
+                <h3>1.3 Problemática Identificada a Mitigar</h3>
+                <p>
+                    La problemática central es la <strong>lentitud operativa y falta de estandarización</strong> en la elaboración de estudios comparativos de cotizaciones de seguros. El proceso actual toma entre 2.5 y 4 horas por expediente. El objetivo de la solución es automatizar la extracción de datos desde los PDF originales y generar un dashboard comparativo web instantáneo.
+                </p>
+            </section>
+
+            <!-- Section 2: Standard Programming Flowchart -->
+            <section>
+                <h2>2. Diagrama de Flujo del Sistema (Programación)</h2>
+                <p>A continuación se presenta el diagrama de flujo lógico de la aplicación construida con la simbología estándar de programación (Inicio/Fin, Procesos y Rombos de Decisión Yes/No):</p>
+
+                <div class="flowchart-wrapper">
+                    <div class="flowchart-title">Diagrama de Flujo de Algoritmo — SegurosCompare</div>
+
+                    <!-- 1. Inicio -->
+                    <div class="fc-node fc-start-end">INICIO</div>
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 2. Proceso: Selección de archivos -->
+                    <div class="fc-node fc-process">Usuario selecciona / arrastra archivos en Dashboard Web</div>
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 3. Decisión: ¿Es PDF válido? -->
+                    <div class="fc-decision-container">
+                        <div class="fc-diamond"></div>
+                        <div class="fc-diamond-text">¿Es archivo PDF válido?</div>
+                    </div>
+
+                    <!-- Branching: Sí vs No -->
+                    <div class="fc-branch-container">
+                        <!-- NO Branch -->
+                        <div class="fc-branch-col">
+                            <span class="fc-arrow-label label-no">NO</span>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-process" style="background:#fff2f2; border-color:#dc3545; color:#b02a37;">Mostrar mensaje de error ("Formatos inválidos")</div>
+                        </div>
+
+                        <!-- YES Branch -->
+                        <div class="fc-branch-col">
+                            <span class="fc-arrow-label label-yes">SÍ</span>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-process">Enviar archivos vía HTTP POST /api/upload al backend</div>
+                        </div>
+                    </div>
+
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 4. Proceso: Extracción PDF -->
+                    <div class="fc-node fc-process">Backend ejecuta `pdf-parse` y extrae texto plano</div>
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 5. Proceso: Parser Heurístico -->
+                    <div class="fc-node fc-process">Aplicar expresiones regulares (Regex) para identificar Aseguradora, Prima Neta, Moneda y Coberturas</div>
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 6. Decisión: ¿Al menos 2 cotizaciones cargadas? -->
+                    <div class="fc-decision-container">
+                        <div class="fc-diamond"></div>
+                        <div class="fc-diamond-text">¿Hay al menos 2 cotizaciones cargadas?</div>
+                    </div>
+
+                    <!-- Branching: Sí vs No -->
+                    <div class="fc-branch-container">
+                        <!-- YES Branch -->
+                        <div class="fc-branch-col">
+                            <span class="fc-arrow-label label-yes">SÍ</span>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-process">Ejecutar motor de scoring y seleccionar "Mejor Opción"</div>
+                        </div>
+
+                        <!-- NO Branch -->
+                        <div class="fc-branch-col">
+                            <span class="fc-arrow-label label-no">NO</span>
+                            <div class="fc-arrow">↓</div>
+                            <div class="fc-node fc-process">Mostrar estado individual de la propuesta sin comparar</div>
+                        </div>
+                    </div>
+
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 7. Proceso: Renderizado UI -->
+                    <div class="fc-node fc-process">Renderizar matrices comparativas en Dashboard HTML5</div>
+                    <div class="fc-arrow">↓</div>
+
+                    <!-- 8. Fin -->
+                    <div class="fc-node fc-start-end">FIN</div>
+                </div>
+            </section>
+
+            <!-- Section 3 -->
+            <section>
+                <h2>3. Especificación de Requerimientos</h2>
+
+                <h3>3.1 Requerimientos Funcionales (RF)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Requerimiento</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>RF-01</strong></td>
+                            <td>Carga Múltiple de PDFs</td>
+                            <td>Permitir al usuario subir 1 o más archivos PDF de cotizaciones simultáneamente mediante botón o drag & drop.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RF-02</strong></td>
+                            <td>Reconocimiento de Aseguradora</td>
+                            <td>Identificar automáticamente la aseguradora emisora (GNP, MAPFRE, INBURSA, CHUBB, etc.) mediante coincidencia de patrones.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RF-03</strong></td>
+                            <td>Extracción de Cifras Financieras</td>
+                            <td>Extraer la Prima Neta, Prima Total, Moneda (USD/MXN) y Sumas Aseguradas principales de los PDF.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RF-04</strong></td>
+                            <td>Matriz de Coberturas</td>
+                            <td>Mapear y presentar una tabla comparativa indicando las coberturas amparadas vs no detectadas en cada opción.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RF-05</strong></td>
+                            <td>Motor de Selección "Mejor Opción"</td>
+                            <td>Evaluar automáticamente las propuestas y destacar la opción más conveniente justificando los criterios.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RF-06</strong></td>
+                            <td>Reinicio / Limpieza de Sesión</td>
+                            <td>Permitir borrar la sesión actual mediante un botón de "Limpiar Datos" para iniciar un nuevo estudio.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RF-07</strong></td>
+                            <td>Exportación de Reporte</td>
+                            <td>Permitir imprimir o generar un PDF del cuadro comparativo en formato ejecutivo limpio.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>3.2 Requerimientos de Interfaz Externa (RIE)</h3>
+                <ul>
+                    <li><strong>RIE-01:</strong> Compatibilidad con navegadores modernos (Chrome, Edge, Firefox, Safari) en arquitecturas de escritorio y laptop.</li>
+                    <li><strong>RIE-02:</strong> Comunicación cliente-servidor mediante API REST con formato de datos JSON (`/api/proposals`, `/api/upload`).</li>
+                </ul>
+
+                <h3>3.3 Requerimientos de Diseño y Atributos de Calidad (RNC)</h3>
+                <ul>
+                    <li><strong>RNC-01 (Estética Profesional):</strong> Interfaz limpia en tema claro (`#f1f5f9`) con tipografía legibles y lenguaje formal.</li>
+                    <li><strong>RNC-02 (Desempeño):</strong> Procesamiento y renderizado de cotizaciones en un tiempo menor a 3 segundos por expediente.</li>
+                    <li><strong>RNC-03 (Usabilidad Neutra):</strong> La aplicación debe iniciar en estado neutro vacío sin datos precargados ficticios.</li>
+                </ul>
+
+                <h3>3.4 Requerimientos de Seguridad y Open Source (RS)</h3>
+                <ul>
+                    <li><strong>RS-01 (Sanitización):</strong> Validación estricta del tipo de archivo subido para aceptar únicamente documentos `.pdf`.</li>
+                    <li><strong>RS-02 (Privacidad):</strong> Aislamiento de los PDFs en directorio local no accesible vía URL pública.</li>
+                    <li><strong>RS-03 (Código Libre GitHub):</strong> Código fuente bajo Licencia MIT, libre de datos personales o credenciales sensibles.</li>
+                </ul>
+            </section>
+
+            <!-- Section 4 -->
+            <section>
+                <h2>4. Dependencia y Prioridad de Funcionalidades</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Elemento / Módulo</th>
+                            <th>Funcionalidad</th>
+                            <th>Dependencia</th>
+                            <th>Prioridad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Backend Core</strong></td>
+                            <td>Servidor Express & API REST</td>
+                            <td>Ninguna</td>
+                            <td><span class="badge-priority priority-high">Alta</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Motor Parsing</strong></td>
+                            <td>Extracción de texto PDF (pdf-parse)</td>
+                            <td>Backend Core</td>
+                            <td><span class="badge-priority priority-high">Alta</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Motor Parsing</strong></td>
+                            <td>Heurística Regex de Aseguradora y Primas</td>
+                            <td>Extracción de texto</td>
+                            <td><span class="badge-priority priority-high">Alta</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Frontend UI</strong></td>
+                            <td>Dashboard Base y Navegación por Pestañas</td>
+                            <td>API REST</td>
+                            <td><span class="badge-priority priority-high">Alta</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Frontend UI</strong></td>
+                            <td>Estado Vacío Inicial (Empty State)</td>
+                            <td>Dashboard Base</td>
+                            <td><span class="badge-priority priority-high">Alta</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Algoritmos</strong></td>
+                            <td>Motor de Selección "Mejor Opción"</td>
+                            <td>Heurística Regex</td>
+                            <td><span class="badge-priority priority-medium">Media</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Frontend UI</strong></td>
+                            <td>Matriz Comparativa de Coberturas y Sumas</td>
+                            <td>API REST</td>
+                            <td><span class="badge-priority priority-medium">Media</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exportación</strong></td>
+                            <td>Generador de Impresión / PDF Ejecutivo</td>
+                            <td>Dashboard Base</td>
+                            <td><span class="badge-priority priority-low">Baja</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Operativo</strong></td>
+                            <td>Botón de Reset / Limpiar Datos</td>
+                            <td>API DELETE</td>
+                            <td><span class="badge-priority priority-low">Baja</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+
+</body>
+</html>

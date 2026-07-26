@@ -1,10 +1,68 @@
 document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
     initTabs();
-    loadData();
     initUpload();
     initClear();
     initExport();
 });
+
+// ─── Authentication Logic ───────────────────────────────────────────────────
+
+function initAuth() {
+    const loginModal = document.getElementById('loginModal');
+    const appMain = document.getElementById('appMain');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const btnLogout = document.getElementById('btnLogout');
+
+    function checkAuth() {
+        const isAuth = localStorage.getItem('seguros_auth_token') === 'user-auth-token-valid';
+        if (isAuth) {
+            loginModal.style.display = 'none';
+            appMain.style.filter = 'none';
+            appMain.style.pointerEvents = 'auto';
+            loadData();
+        } else {
+            loginModal.style.display = 'flex';
+            appMain.style.filter = 'blur(8px)';
+            appMain.style.pointerEvents = 'none';
+        }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUser').value.trim();
+        const password = document.getElementById('loginPass').value.trim();
+        loginError.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                localStorage.setItem('seguros_auth_token', data.token);
+                checkAuth();
+            } else {
+                loginError.textContent = data.error || 'Credenciales inválidas.';
+                loginError.style.display = 'block';
+            }
+        } catch (err) {
+            loginError.textContent = 'Error al conectar con el servidor.';
+            loginError.style.display = 'block';
+        }
+    });
+
+    btnLogout?.addEventListener('click', () => {
+        localStorage.removeItem('seguros_auth_token');
+        checkAuth();
+    });
+
+    checkAuth();
+}
 
 // ─── Tab Navigation ──────────────────────────────────────────────────────────
 

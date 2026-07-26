@@ -12,7 +12,42 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
+
+    <!-- Modal de Inicio de Sesión (Login Modal Overlay) -->
+    <div id="loginModal" class="login-modal-overlay">
+        <div class="login-modal-card">
+            <div class="login-modal-header">
+                <div class="login-icon"><i class="fa-solid fa-user-lock"></i></div>
+                <h2>Acceso a SegurosCompare</h2>
+                <p>Ingrese sus credenciales de usuario para acceder al comparador de seguros.</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginUser"><i class="fa-solid fa-user"></i> Usuario</label>
+                    <input type="text" id="loginUser" required placeholder="Ingresa usuario (ej. admin)">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPass"><i class="fa-solid fa-key"></i> Contraseña</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••">
+                </div>
+
+                <div id="loginError" class="login-error-msg" style="display:none;"></div>
+
+                <button type="submit" class="btn btn-login">
+                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                </button>
+
+                <div class="login-credentials-hint">
+                    <small>🔐 Credenciales Demo: <strong>admin</strong> / <strong>password123</strong></small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Dashboard Container -->
+    <div class="app-container" id="appMain" style="filter: blur(8px); pointer-events: none;">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="brand">
@@ -67,6 +102,9 @@
                 <div class="header-actions">
                     <button class="btn btn-outline" id="btnExportPDF">
                         <i class="fa-solid fa-print"></i> Exportar
+                    </button>
+                    <button class="btn btn-outline btn-logout" id="btnLogout" style="color:var(--accent-rose);">
+                        <i class="fa-solid fa-right-from-bracket"></i> Salir
                     </button>
                 </div>
             </header>
@@ -133,7 +171,7 @@
             <div id="tab-coberturas" class="tab-panel">
                 <div class="panel-header">
                     <h2><i class="fa-solid fa-layer-group"></i> Matriz Comparativa de Coberturas</h2>
-                    <p>Coberturas identificadas en cada cotización PDF.</p>
+                    <p>Coberturas identificadas en cada cotización PDF mediante el motor heurístico.</p>
                 </div>
                 <div id="coberturasEmpty" class="empty-state">
                     <i class="fa-solid fa-table-cells"></i>

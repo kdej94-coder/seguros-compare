@@ -15,6 +15,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Store for parsed proposals — starts EMPTY
 let proposals = [];
 
+// Default Auth Credentials
+const AUTH_USER = process.env.AUTH_USER || 'admin';
+const AUTH_PASS = process.env.AUTH_PASS || 'password123';
+
 // Configure Multer for PDF file uploads
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -36,7 +40,7 @@ async function extractTextFromPDF(filePath) {
     return data.text;
 }
 
-// ─── Heuristic Data Extraction from PDF text ─────────────────────────────────
+// ─── Enhanced Heuristic Data Extraction ──────────────────────────────────────
 
 function identifyInsurer(text, filename) {
     const combined = (text + ' ' + filename).toUpperCase();
@@ -102,7 +106,6 @@ function extractActivity(text) {
 }
 
 function extractPrimaNeta(text) {
-    // Try multiple patterns
     const patterns = [
         /Prima\s+Neta\s*\$?\s*([\d,]+(?:\.\d+)?)/i,
         /PRIMA\s+NETA[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
@@ -158,35 +161,40 @@ function extractSumasAseguradas(text) {
     return result;
 }
 
+// Advanced Multi-Pattern Coverage Extraction Engine
 function extractCoberturas(text) {
-    const coberturasToCheck = [
-        'Incendio, rayo y explosión',
-        'Extensión de cubierta',
-        'Fenómenos hidrometeorológicos',
-        'Terremoto y erupción volcánica',
-        'Remoción de escombros',
-        'Huelgas y alborotos populares',
-        'Sabotaje y terrorismo',
-        'Responsabilidad civil',
-        'Rotura de cristales',
-        'Rotura de maquinaria',
-        'Equipo electrónico',
-        'Dinero y valores',
-        'Pérdidas consecuenciales',
-        'Gastos extraordinarios'
+    const coverageRules = [
+        { concepto: 'Incendio, rayo y explosión', regex: /INCENDIO|RAYO|EXPLOSI[OÓ]N/i },
+        { concepto: 'Extensión de cubierta / Todo Riesgo', regex: /EXTENSI[OÓ]N\s+DE\s+CUBIERTA|TODO\s+RIESGO|COBERTURA\s+AMPLIA/i },
+        { concepto: 'Fenómenos hidrometeorológicos (FHM)', regex: /HIDROMETEOROL[OÓ]GICO|HURAC[AÁ]N|INUNDACI[OÓ]N|FHM/i },
+        { concepto: 'Terremoto y erupción volcánica', regex: /TERREMOTO|ERUPCI[OÓ]N|VOLC[AÁ]NICA/i },
+        { concepto: 'Inflación / Ajuste inflacionario', regex: /INFLACI[OÓ]N|INPC|AJUSTE\s+POR\s+INFLACI[OÓ]N/i },
+        { concepto: 'Remoción de escombros', regex: /REMOCI[OÓ]N\s+DE?\s+ESCOMBROS/i },
+        { concepto: 'Bienes bajo convenio expreso', regex: /CONVENIO\s+EXPRESO/i },
+        { concepto: 'Incisos conocidos / no conocidos', regex: /INCISOS?\s+(?:CONOCIDOS?|NUEVOS?)/i },
+        { concepto: 'Compensación entre incisos', regex: /COMPENSACI[OÓ]N\s+ENTRE\s+INCISOS/i },
+        { concepto: 'Huelgas y alborotos populares', regex: /HUELGAS?|ALBOROTOS?\s+POPULARES?/i },
+        { concepto: 'Sabotaje y terrorismo', regex: /SABOTAJE|TERRORISMO/i },
+        { concepto: 'Derrame de protecciones contra incendio (PCI)', regex: /DERRAME|PCI|PROTECCIONES?\s+CONTRA\s+INCENDIO/i },
+        { concepto: 'Objetos raros y de arte', regex: /OBJETOS?\s+RAROS?|ARTE/i },
+        { concepto: 'Gastos de extinción', regex: /GASTOS?\s+DE\s+EXTINCI[OÓ]N/i },
+        { concepto: 'Mejoras y adaptaciones', regex: /MEJORAS?\s+Y\s+ADAPTACIONES/i },
+        { concepto: 'Gastos extraordinarios', regex: /GASTOS?\s+EXTRAORDINARIOS/i },
+        { concepto: 'Pérdidas consecuenciales / Lucro cesante', regex: /P[EÉ]RDIDA\s+DE\s+UTILIDADES|LUCRO\s+CESANTE|GASTOS\s+FIJOS|CONSECUENCIALES/i },
+        { concepto: 'Responsabilidad Civil Inmuebles y Actividades', regex: /RESPONSABILIDAD\s+CIVIL|RC\s+GENERAL|RC\s+INMUEBLES/i },
+        { concepto: 'RC Cruzada / Asumida / Contratistas', regex: /RC\s+CRUZADA|RC\s+ASUMIDA|CONTRATISTAS/i },
+        { concepto: 'RC Estacionamiento', regex: /ESTACIONAMIENTO|CAJONES/i },
+        { concepto: 'Dinero y Valores', regex: /DINERO|VALORES/i },
+        { concepto: 'Rotura de Cristales', regex: /CRISTALES/i },
+        { concepto: 'Rotura de Maquinaria y Calderas', regex: /MAQUINARIA|CALDERAS/i },
+        { concepto: 'Equipo Electrónico Fijo / Móvil', regex: /EQUIPO\s+ELECTR[OÓ]NICO/i },
+        { concepto: 'Daños a Otras Propiedades (DOPA)', regex: /DOPA|OTRAS\s+PROPIEDADES/i }
     ];
 
-    const upper = text.toUpperCase();
-    const results = [];
-    for (const c of coberturasToCheck) {
-        const searchTerm = c.toUpperCase()
-            .replace('Y ', '')
-            .replace('Ó', 'O')
-            .split(' ')[0]; // use first word for matching
-        const found = upper.includes(searchTerm);
-        results.push({ concepto: c, amparada: found });
-    }
-    return results;
+    return coverageRules.map(rule => ({
+        concepto: rule.concepto,
+        amparada: rule.regex.test(text)
+    }));
 }
 
 function parsePDFData(text, filename) {
@@ -216,17 +224,14 @@ function evaluateBestProposal(proposalList) {
     const scored = withPrima.map(p => {
         let score = 100;
 
-        // Lower prima is better (normalize to score)
         const minPrima = Math.min(...withPrima.map(x => x.primaNeta));
         const maxPrima = Math.max(...withPrima.map(x => x.primaNeta));
         const range = maxPrima - minPrima || 1;
         score -= ((p.primaNeta - minPrima) / range) * 40;
 
-        // More coverages is better
         const covCount = p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0;
         score += covCount * 2;
 
-        // More sumas aseguradas data = more complete proposal
         const sumaKeys = Object.keys(p.sumasAseguradas || {}).length;
         score += sumaKeys * 1.5;
 
@@ -263,7 +268,17 @@ function evaluateBestProposal(proposalList) {
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 
-// Get current state (starts empty)
+// Authentication Login API
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === AUTH_USER && password === AUTH_PASS) {
+        res.json({ success: true, token: 'user-auth-token-valid', user: AUTH_USER });
+    } else {
+        res.status(401).json({ success: false, error: 'Usuario o contraseña incorrectos.' });
+    }
+});
+
+// Get current state
 app.get('/api/proposals', (req, res) => {
     const recommendation = evaluateBestProposal(proposals);
     res.json({
@@ -330,8 +345,7 @@ app.delete('/api/proposals', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`===================================================`);
-    console.log(`  SegurosCompare - Dashboard de Comparación`);
+    console.log(`  SegurosCompare - Dashboard con Login y PDF Engine`);
     console.log(`  Corriendo en: http://localhost:${PORT}`);
-    console.log(`  Estado: Sin datos. Suba PDFs para comenzar.`);
     console.log(`===================================================`);
 });
