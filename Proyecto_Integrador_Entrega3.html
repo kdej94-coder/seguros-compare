@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Integrador - Entrega 3 - SegurosCompare (Universidad Tecmilenio)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004085;
+            --primary-light: #e8f4f8;
+            --accent: #28a745;
+            --dark: #212529;
+            --gray-light: #f8f9fa;
+            --border: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--dark);
+            background-color: #f4f6f9;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .document-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 60px 70px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 22px;
+            color: var(--primary);
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 24px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: var(--primary);
+            border-bottom: 1.5px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 36px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 15px;
+            color: var(--dark);
+            margin-top: 22px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p, li {
+            font-size: 13.5px;
+            color: #333;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        /* Callout Box */
+        .info-box {
+            background: #eef6ff;
+            border-left: 4px solid #0d6efd;
+            padding: 16px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #0d6efd;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        /* Diagrams Container */
+        .diagram-wrapper {
+            background: #fafafa;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .diagram-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 9px 11px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10.5px;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        /* Badges for Labels & Milestones */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-feature { background: #cff4fc; color: #055160; border: 1px solid #9eeaf9; }
+        .badge-bug { background: #f8d7da; color: #721c24; border: 1px solid #f5c2c7; }
+        .badge-ci { background: #e2e3e5; color: #41464b; border: 1px solid #c4c8cb; }
+        .badge-out { background: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
+
+        .badge-beta { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .badge-ga { background: #d0e1fd; color: #084298; border: 1px solid #b6d4fe; }
+
+        /* Code snippets */
+        pre, code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            background: #212529;
+            color: #f8f9fa;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border-radius: 6px;
+        }
+
+        /* Print Controls */
+        .print-btn-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-print {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .btn-print:hover {
+            background: #002b5c;
+        }
+
+        @media print {
+            body { background: #ffffff; padding: 0; }
+            .document-container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+            .print-btn-bar { display: none !important; }
+            h2 { page-break-after: avoid; }
+            .diagram-wrapper, table { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="print-btn-bar">
+            <button onclick="window.print()" class="btn-print">
+                🖨️ Imprimir / Guardar como PDF
+            </button>
+        </div>
+
+        <div class="document-container">
+            <!-- Institutional Header Table -->
+            <table style="width: 100%; border: 1.5px solid #000; border-collapse: collapse; margin-bottom: 30px; font-family: 'Inter', sans-serif;">
+                <tr>
+                    <td style="border: 1px solid #000; padding: 10px 14px; width: 68%; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Nombre:</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #000; margin-top: 6px;">Carlos de Jesus Colorado Quiroz</div>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 10px 14px; width: 32%; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Matrícula:</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #000; margin-top: 6px;">2631633</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Nombre del curso:</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #000; margin-top: 6px;">Taller de productividad basada en herramientas tecnológicas</div>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Nombre del profesor:</div>
+                        <div style="font-size: 14px; font-weight: 700; color: #000; margin-top: 6px;">Rey Moisés Vásquez Hernández</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Módulo: <span style="font-weight: 700;">1</span></div>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-style: italic; font-weight: 700; color: #000;">Actividad: 3 (Entrega 3)</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border: 1px solid #000; padding: 10px 14px; vertical-align: top; background: #fff;">
+                        <div style="font-size: 13px; font-weight: 700; color: #000;">Fecha: <span style="font-weight: 700;">31/07/2026</span></div>
+                    </td>
+                </tr>
+            </table>
+
+            <h1>ENTREGA 3: INTEGRACIÓN CONTINUA (CI/CD), ADMINISTRACIÓN DE PROYECTO (TRELLO/GITHUB) Y ARQUITECTURA DEL SISTEMA</h1>
+
+            <!-- SECTION 1: INTEGRACIÓN CONTINUA -->
+            <section>
+                <h2>1. Explicación e Implementación de Integración Continua (Travis CI / GitHub Actions)</h2>
+                
+                <div class="info-box">
+                    <h4>💡 ¿Qué es un Servidor de Integración Continua (CI/CD)?</h4>
+                    <p>
+                        La <strong>Integración Continua (Continuous Integration - CI)</strong> es una práctica de ingeniería de software mediante la cual cada cambio realizado en el código fuente (un `git push` o un Pull Request) activa un servidor automatizado en la nube (como <strong>Travis CI</strong> o <strong>GitHub Actions</strong>) que descarga el proyecto, instala sus dependencias y ejecuta pruebas unitarias automatizadas.
+                    </p>
+                    <p>
+                        Si alguna prueba falla, el servidor de CI marca la compilación como <strong>FALLIDA (FAILED)</strong> y bloquea la integración de dicho código hacia producción, garantizando que el sistema en vivo nunca sufra caídas.
+                    </p>
+                </div>
+
+                <h3>1.1 Configuración de Travis CI (`.travis.yml`) y GitHub Actions</h3>
+                <p>
+                    Para cumplir con los requerimientos técnicos y la rúbrica del curso, se configuraron dos motores de integración continua conectados directamente al repositorio de GitHub <code>https://github.com/kdej94-coder/seguros-compare.git</code>:
+                </p>
+
+                <h4>Archivo de Configuración de Travis CI (`.travis.yml`):</h4>
+                <pre><code># Travis CI Configuration for SegurosCompare
+language: node_js
+
+node_js:
+  - "18"
+  - "20"
+
+cache:
+  directories:
+    - node_modules
+
+branches:
+  only:
+    - main
+    - develop
+
+install:
+  - npm install
+
+script:
+  - npm test
+</code></pre>
+
+                <h3>1.2 Suite de Pruebas Unitarias Automatizadas (`test/app.test.js`)</h3>
+                <p>
+                    Se construyó una suite de pruebas automatizadas ejecutada con el comando `npm test`. Al realizar un push, el servidor de CI ejecuta estas 3 pruebas clave:
+                </p>
+                <ol>
+                    <li><strong>Prueba de Extracción Heurística Regex:</strong> Valida que los patrones de texto detecten correctamente coberturas amparadas en el PDF.</li>
+                    <li><strong>Prueba del Motor de Scoring ("Mejor Opción"):</strong> Garantiza que la aseguradora con menor prima y mayor cobertura sea seleccionada correctamente.</li>
+                    <li><strong>Prueba del Módulo de Autenticación:</strong> Valida el inicio de sesión del usuario y el rechazo de credenciales incorrectas.</li>
+                </ol>
+            </section>
+
+            <!-- SECTION 2: ESTRATEGIA DE RAMAS -->
+            <section>
+                <h2>2. Estrategia de Administración de Código (Git Flow Branches)</h2>
+                <p>El código fuente se administra con dos ramas principales de ciclo de vida permanente y ramas temporales por requerimiento:</p>
+
+                <ul>
+                    <li><code>main</code> (anteriormente <code>master</code>): Contiene únicamente el código estable publicado en producción para los usuarios finales (Milestone <strong>GA</strong>).</li>
+                    <li><code>develop</code>: Rama de integración continua donde se consolidan las funcionalidades probadas durante la fase de desarrollo (Milestone <strong>Beta</strong>).</li>
+                    <li><code>feature/*</code>: Ramas individuales creadas para desarrollar una tarea específica (ej. <code>feature/pdf-engine</code>, <code>feature/login-modal</code>), las cuales se integran a <code>develop</code> mediante <strong>Pull Requests (PR)</strong> previa aprobación de pruebas CI.</li>
+                </ul>
+
+                <div class="diagram-wrapper">
+                    <div class="diagram-title">Flujo de Ramas y Despliegue (Git Flow + CI/CD)</div>
+                    <pre style="background: transparent; color: var(--dark); font-size: 11px; margin:0;">
+ [Feature Branch] ----(Pull Request + Tests CI)----> [develop Branch (Beta)] ----(Merge Release)----> [main Branch (GA)] ----(Deploy Cloud)----> [Render App Live]
+                    </pre>
+                </div>
+            </section>
+
+            <!-- SECTION 3: ADMINISTRACIÓN DE TAREAS Y MILESTONES -->
+            <section>
+                <h2>3. Administración de Proyectos, Tareas, Etiquetas y Milestones (Trello / GitHub Projects)</h2>
+                <p>
+                    Las actividades del proyecto fueron estructuradas y categorizadas con estimación de tiempos en horas. Se agruparon en dos etapas de madurez del producto (<strong>Milestones</strong>): <strong>Beta</strong> (desarrollo y pruebas) y <strong>General Availability - GA</strong> (versión final de producción).
+                </p>
+
+                <h3>3.1 Matriz de Tareas, Etiquetas y Tiempos Estimados</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Tarea</th>
+                            <th>Descripción de la Actividad</th>
+                            <th>Etiqueta (Label)</th>
+                            <th>Etapa (Milestone)</th>
+                            <th>Tiempo Est.</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>TSK-01</strong></td>
+                            <td>Configuración de proyecto Express y servidor Node.js</td>
+                            <td><span class="badge badge-feature">feature</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>4 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-02</strong></td>
+                            <td>Integración de librería `pdf-parse` para buffer de lectura</td>
+                            <td><span class="badge badge-feature">feature</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>6 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-03</strong></td>
+                            <td>Diseño de motor Regex para 25 coberturas de seguros</td>
+                            <td><span class="badge badge-feature">feature</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>12 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-04</strong></td>
+                            <td>Desarrollo de Modal de Login y Autenticación de usuario</td>
+                            <td><span class="badge badge-feature">feature</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>8 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-05</strong></td>
+                            <td>Diseño de Dashboard en modo claro HTML5/CSS3 dinámico</td>
+                            <td><span class="badge badge-feature">feature</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>10 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-06</strong></td>
+                            <td>Configuración de Pruebas Unitarias (`test/app.test.js`)</td>
+                            <td><span class="badge badge-ci">ci-cd</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>6 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-07</strong></td>
+                            <td>Integración de Travis CI y GitHub Actions CI Workflow</td>
+                            <td><span class="badge badge-ci">ci-cd</span></td>
+                            <td><span class="badge badge-beta">Beta</span></td>
+                            <td>5 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-08</strong></td>
+                            <td>Despliegue automatizado en la nube (Render Cloud Host)</td>
+                            <td><span class="badge badge-ci">ci-cd</span></td>
+                            <td><span class="badge badge-ga">GA</span></td>
+                            <td>4 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TSK-09</strong></td>
+                            <td>Redacción de documentación pública README y Licencia MIT</td>
+                            <td><span class="badge badge-feature">docs</span></td>
+                            <td><span class="badge badge-ga">GA</span></td>
+                            <td>3 hrs</td>
+                            <td>Completado</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>3.2 Delimitación del Alcance: Lo que NO se cubrirá en la Versión v1.0 (Out of Scope)</h3>
+                <p>
+                    Con el objetivo de delimitar el alcance del producto y garantizar la entrega oportuna en la versión v1.0, las siguientes funcionalidades han sido catalogadas bajo la etiqueta <code>out-of-scope / v2-future</code> y se han diferido para futuras versiones del software:
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Funcionalidad Fuera de Alcance (v1.0)</th>
+                            <th>Etiqueta</th>
+                            <th>Justificación Técnica de Exclusión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Base de Datos Persistente (PostgreSQL / MongoDB)</strong></td>
+                            <td><span class="badge badge-out">v2-future</span></td>
+                            <td>La v1.0 funciona en memoria y archivos temporales para maximizar velocidad y privacidad de cotizaciones sin costo de infraestructura de BD.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reconocimiento Óptico de Caracteres (OCR Tesseract)</strong></td>
+                            <td><span class="badge badge-out">v2-future</span></td>
+                            <td>Los PDF de cotizaciones de las aseguradoras actuales son digitales vectoriales. El OCR para PDFs escaneados como imagen requiere alto consumo de CPU.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Envío Automático de Correos (SMTP SendGrid)</strong></td>
+                            <td><span class="badge badge-out">v2-future</span></td>
+                            <td>Se priorizó la exportación directa a PDF/Impresión ejecutiva en la v1.0. El envío por correo se pospone a la v2.0.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Módulo de Pago de Pólizas en Línea (Stripe)</strong></td>
+                            <td><span class="badge badge-out">v2-future</span></td>
+                            <td>El sistema es un comparador de toma de decisión técnica, no una pasarela de venta directa de pólizas.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- SECTION 4: ARQUITECTURA DEL SISTEMA -->
+            <section>
+                <h2>4. Arquitectura de la Aplicación y Servidores</h2>
+                <p>
+                    La arquitectura del sistema adopta un modelo por capas con desacoplamiento entre el frontend, el servidor de aplicación, la integración continua y el entorno de despliegue cloud:
+                </p>
+
+                <div class="diagram-wrapper">
+                    <div class="diagram-title">Diagrama de Arquitectura de Infraestructura y Servidores</div>
+                    <pre style="background: transparent; color: var(--dark); font-size: 11px; margin:0;">
++-----------------------+        HTTP POST /api/upload       +------------------------------------+
+|   Cliente / Usuario   | ---------------------------------> |   Servidor Web / App (Express.js)  |
+|  (Browser Chrome/Edge)| <--------------------------------- |   Node.js Runtime (Puerto 3000)    |
++-----------------------+        JSON Response / Proposals   +------------------------------------+
+                                                                              |
+                                                                              | Procesa archivos
+                                                                              v
+                                                             +------------------------------------+
+                                                             | Almacenamiento Temporal (`uploads/)|
+                                                             +------------------------------------+
+
+========================================= FLUJO CI/CD =========================================
+
++-----------------------+        git push / Pull Request     +------------------------------------+
+|  Repositorio GitHub   | ---------------------------------> |   Servidor CI/CD (Travis / Actions)|
+|  (kdej94-coder/...)   |                                    |   Ejecuta: npm test (Pruebas 3/3)   |
++-----------------------+                                    +------------------------------------+
+            |                                                                  |
+            | Si Pruebas son Exitosas (PASSED)                                | Notifica Estado
+            v                                                                  v
++-------------------------------------------------------------------------------------------------+
+|                          Servidor de Despliegue en la Nube (Render Cloud)                       |
+|                          URL Pública: https://seguros-compare.onrender.com                      |
++-------------------------------------------------------------------------------------------------+
+                    </pre>
+                </div>
+
+                <h3>4.1 Componentes de Infraestructura</h3>
+                <ol>
+                    <li><strong>Repositorio Central:</strong> GitHub (`main` y `develop`), que almacena el código fuente, la documentación y los scripts de prueba.</li>
+                    <li><strong>Servidor de CI/CD:</strong> Travis CI y GitHub Actions Runners, encargados de verificar la integridad del código en cada push.</li>
+                    <li><strong>Servidor de Aplicación:</strong> Node.js con Express, encargado de servir la interfaz estática (`/public`) y exponer la API REST.</li>
+                    <li><strong>Servidor de Producción Cloud:</strong> Render.com Web Service, que ejecuta la aplicación de forma pública con SSL (HTTPS).</li>
+                </ol>
+            </section>
+        </div>
+    </div>
+
+</body>
+</html>
