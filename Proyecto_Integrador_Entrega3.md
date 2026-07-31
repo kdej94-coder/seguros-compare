@@ -6,6 +6,19 @@
 
 # ENTREGA 3: INTEGRACIÓN CONTINUA (CI/CD), ADMINISTRACIÓN DE PROYECTO (TRELLO/GITHUB) Y ARQUITECTURA DEL SISTEMA
 
+### ✅ RESUMEN DE ENTREGABLES PARA EVALUACIÓN (CHECKLIST DE RÚBRICA)
+
+1. **Repositorio GitHub (Código, Branches & Milestones):**
+   - Enlace público: [https://github.com/kdej94-coder/seguros-compare](https://github.com/kdej94-coder/seguros-compare)
+   - *Incluye código completo, ramas `main` (GA) y `develop` (Beta), Pull Requests y Milestones de madurez.*
+2. **Administración de Tareas, Etiquetas y Alcance (Trello / GitHub Projects):**
+   - *Ver Sección 3 del documento. Incluye Matriz de tareas estimadas en horas, etiquetas (`feature`, `ci-cd`), Milestones (Beta vs GA) y delimitación de funcionalidades fuera de alcance (`v2-future / out-of-scope`).*
+3. **Dashboard de Integración Continua (Travis CI / GitHub Actions) con Pruebas Automatizadas:**
+   - Enlace CI Workflows: [https://github.com/kdej94-coder/seguros-compare/actions](https://github.com/kdej94-coder/seguros-compare/actions)
+   - *Configuraciones `.travis.yml` y `ci.yml` con suite de pruebas unitarias `test/app.test.js` ejecutada exitosamente (3/3 PASSED).*
+4. **Diagrama de Arquitectura de la Solución:**
+   - *Ver Sección 4 del documento. Diagrama visual completo de infraestructura, frontend, backend Express, storage `uploads/`, Travis/Actions CI y despliegue en Render Cloud.*
+
 ---
 
 ## 1. Explicación e Implementación de Integración Continua (Travis CI / GitHub Actions)
