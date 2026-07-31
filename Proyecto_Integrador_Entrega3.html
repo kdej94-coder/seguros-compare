@@ -334,11 +334,31 @@ script:
                     <li><code>feature/*</code>: Ramas individuales creadas para desarrollar una tarea específica (ej. <code>feature/pdf-engine</code>, <code>feature/login-modal</code>), las cuales se integran a <code>develop</code> mediante <strong>Pull Requests (PR)</strong> previa aprobación de pruebas CI.</li>
                 </ul>
 
-                <div class="diagram-wrapper">
+                <div class="diagram-wrapper" style="padding: 20px 16px; overflow: hidden;">
                     <div class="diagram-title">Flujo de Ramas y Despliegue (Git Flow + CI/CD)</div>
-                    <pre style="background: transparent; color: var(--dark); font-size: 11px; margin:0;">
- [Feature Branch] ----(Pull Request + Tests CI)----> [develop Branch (Beta)] ----(Merge Release)----> [main Branch (GA)] ----(Deploy Cloud)----> [Render App Live]
-                    </pre>
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size: 12px; font-weight: 600;">
+                        <div style="background: #eef6ff; border: 1.5px solid #0d6efd; color: #0d6efd; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                            [Feature Branch]
+                        </div>
+                        <div style="color: #6c757d; font-size: 11px; font-weight: bold; text-align: center;">
+                            ➔ (PR + Tests CI) ➔
+                        </div>
+                        <div style="background: #d1e7dd; border: 1.5px solid #198754; color: #0f5132; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                            [develop Branch (Beta)]
+                        </div>
+                        <div style="color: #6c757d; font-size: 11px; font-weight: bold; text-align: center;">
+                            ➔ (Merge Release) ➔
+                        </div>
+                        <div style="background: #d0e1fd; border: 1.5px solid #084298; color: #084298; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                            [main Branch (GA)]
+                        </div>
+                        <div style="color: #6c757d; font-size: 11px; font-weight: bold; text-align: center;">
+                            ➔ (Deploy Cloud) ➔
+                        </div>
+                        <div style="background: #f8f9fa; border: 1.5px solid #212529; color: #212529; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                            [Render App Live]
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -482,34 +502,78 @@ script:
                     La arquitectura del sistema adopta un modelo por capas con desacoplamiento entre el frontend, el servidor de aplicación, la integración continua y el entorno de despliegue cloud:
                 </p>
 
-                <div class="diagram-wrapper">
-                    <div class="diagram-title">Diagrama de Arquitectura de Infraestructura y Servidores</div>
-                    <pre style="background: transparent; color: var(--dark); font-size: 11px; margin:0;">
-+-----------------------+        HTTP POST /api/upload       +------------------------------------+
-|   Cliente / Usuario   | ---------------------------------> |   Servidor Web / App (Express.js)  |
-|  (Browser Chrome/Edge)| <--------------------------------- |   Node.js Runtime (Puerto 3000)    |
-+-----------------------+        JSON Response / Proposals   +------------------------------------+
-                                                                              |
-                                                                              | Procesa archivos
-                                                                              v
-                                                             +------------------------------------+
-                                                             | Almacenamiento Temporal (`uploads/)|
-                                                             +------------------------------------+
+                <!-- Pixel-perfect visual architecture diagram matching user's exact image -->
+                <div style="background: #ffffff; border: 2px solid #dee2e6; border-radius: 12px; padding: 28px 24px; margin: 24px 0; font-family: 'Inter', sans-serif;">
+                    <h3 style="text-align: center; font-size: 15px; font-weight: 800; color: #004085; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0;">
+                        DIAGRAMA DE ARQUITECTURA DE INFRAESTRUCTURA Y SERVIDORES
+                    </h3>
 
-========================================= FLUJO CI/CD =========================================
+                    <!-- Top Row: App Flow -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <div style="flex: 1.2; background: #cde4ff; border: 1.5px solid #0d6efd; padding: 14px 12px; border-radius: 6px; text-align: center;">
+                            <strong style="display: block; font-size: 13px; color: #000;">Cliente / Usuario</strong>
+                            <span style="font-size: 11px; color: #212529;">(Browser Chrome/Edge)</span>
+                        </div>
 
-+-----------------------+        git push / Pull Request     +------------------------------------+
-|  Repositorio GitHub   | ---------------------------------> |   Servidor CI/CD (Travis / Actions)|
-|  (kdej94-coder/...)   |                                    |   Ejecuta: npm test (Pruebas 3/3)   |
-+-----------------------+                                    +------------------------------------+
-            |                                                                  |
-            | Si Pruebas son Exitosas (PASSED)                                | Notifica Estado
-            v                                                                  v
-+-------------------------------------------------------------------------------------------------+
-|                          Servidor de Despliegue en la Nube (Render Cloud)                       |
-|                          URL Pública: https://seguros-compare.onrender.com                      |
-+-------------------------------------------------------------------------------------------------+
-                    </pre>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10.5px; font-weight: bold; color: #333;">
+                            <div>HTTP POST /api/upload ➔</div>
+                            <div>───</div>
+                            <div>⇦ JSON Response / Proposals</div>
+                        </div>
+
+                        <div style="flex: 1.5; background: #cde4ff; border: 1.5px solid #0d6efd; padding: 14px 12px; border-radius: 6px; text-align: center;">
+                            <strong style="display: block; font-size: 13px; color: #000;">Servidor Web / App (Express.js)</strong>
+                            <span style="font-size: 11px; color: #212529;">Node.js Runtime (Puerto 3000)</span>
+                        </div>
+                    </div>
+
+                    <!-- Down Arrow to Storage -->
+                    <div style="display: flex; justify-content: flex-end; margin-right: 140px; margin-bottom: 8px;">
+                        <div style="font-size: 11px; font-weight: bold; color: #333; text-align: center;">
+                            │ Procesa archivos<br>▼
+                        </div>
+                    </div>
+
+                    <!-- Storage Box -->
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+                        <div style="width: 52%; background: #cde4ff; border: 1.5px solid #0d6efd; padding: 12px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 700; color: #000;">
+                            Almacenamiento Temporal (`uploads/`)
+                        </div>
+                    </div>
+
+                    <!-- CI/CD Divider -->
+                    <div style="text-align: center; font-size: 11px; font-weight: 800; color: #495057; letter-spacing: 1px; margin: 20px 0; border-top: 1px dashed #adb5bd; border-bottom: 1px dashed #adb5bd; padding: 6px 0;">
+                        ========================================= FLUJO CI/CD =========================================
+                    </div>
+
+                    <!-- CI/CD Row -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px;">
+                        <div style="flex: 1.2; background: #cde4ff; border: 1.5px solid #0d6efd; padding: 14px 12px; border-radius: 6px; text-align: center;">
+                            <strong style="display: block; font-size: 13px; color: #000;">Repositorio GitHub</strong>
+                            <span style="font-size: 11px; color: #212529;">(kdej94-coder/...)</span>
+                        </div>
+
+                        <div style="font-size: 11px; font-weight: bold; color: #333; text-align: center;">
+                            git push / Pull Request ➔
+                        </div>
+
+                        <div style="flex: 1.5; background: #cde4ff; border: 1.5px solid #0d6efd; padding: 14px 12px; border-radius: 6px; text-align: center;">
+                            <strong style="display: block; font-size: 13px; color: #000;">Servidor CI/CD (Travis / Actions)</strong>
+                            <span style="font-size: 11px; color: #212529;">Ejecuta: npm test (Pruebas 3/3)</span>
+                        </div>
+                    </div>
+
+                    <!-- CI/CD Down Arrows -->
+                    <div style="display: flex; justify-content: space-between; padding: 0 40px; margin-bottom: 8px; font-size: 10.5px; font-weight: bold; color: #333;">
+                        <div>↙ Si Pruebas son Exitosas (PASSED)</div>
+                        <div>Notifica Estado ↘</div>
+                    </div>
+
+                    <!-- Production Render Cloud Box -->
+                    <div style="background: #cde4ff; border: 1.5px solid #0d6efd; padding: 16px 12px; border-radius: 6px; text-align: center;">
+                        <strong style="display: block; font-size: 13.5px; color: #000;">Servidor de Despliegue en la Nube (Render Cloud)</strong>
+                        <span style="font-size: 11.5px; color: #000; font-weight: 600;">URL Pública: https://seguros-compare.onrender.com</span>
+                    </div>
                 </div>
 
                 <h3>4.1 Componentes de Infraestructura</h3>

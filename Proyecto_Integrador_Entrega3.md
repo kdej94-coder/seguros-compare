@@ -51,6 +51,13 @@ Se construyó una suite de pruebas automatizadas ejecutada con `npm test`:
 - `develop`: Rama de integración donde se consolidan funcionalidades probadas (Milestone **Beta**).
 - `feature/*`: Ramas temporales creadas para desarrollar una tarea específica integrada mediante Pull Requests (PR).
 
+```mermaid
+graph LR
+    A[Feature Branch] -->|Pull Request + Tests CI| B[develop Branch - Beta]
+    B -->|Merge Release| C[main Branch - GA]
+    C -->|Deploy Cloud| D[Render App Live]
+```
+
 ---
 
 ## 3. Administración de Proyectos, Tareas, Etiquetas y Milestones
@@ -81,8 +88,16 @@ Se construyó una suite de pruebas automatizadas ejecutada con `npm test`:
 
 ## 4. Arquitectura de la Aplicación y Servidores
 
-### Componentes de Infraestructura
-1. **Repositorio Central:** GitHub (`main` y `develop`).
-2. **Servidor de CI/CD:** Travis CI y GitHub Actions.
-3. **Servidor de Aplicación:** Node.js con Express (Servidor Web & API REST).
-4. **Servidor de Producción Cloud:** Render.com Web Service.
+```mermaid
+graph TD
+    subgraph APP[Aplicación Web & API]
+        A[Cliente / Usuario Browser] <-->|HTTP POST /api/upload & JSON| B[Servidor Web Express.js / Node.js]
+        B -->|Procesa archivos| C[Almacenamiento Temporal uploads/]
+    end
+
+    subgraph CICD[Flujo CI/CD & Cloud]
+        D[Repositorio GitHub] -->|git push / Pull Request| E[Servidor CI/CD Travis / Actions]
+        D -->|Si Pruebas son Exitosas| F[Servidor de Despliegue Render Cloud]
+        E -->|Notifica Estado PASSED| F
+    end
+```
