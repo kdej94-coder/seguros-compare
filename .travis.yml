@@ -1,0 +1,24 @@
+# Travis CI Configuration for SegurosCompare
+language: node_js
+
+node_js:
+  - "18"
+  - "20"
+
+cache:
+  directories:
+    - node_modules
+
+branches:
+  only:
+    - main
+    - develop
+
+install:
+  - npm install
+
+script:
+  - npm test
+
+notifications:
+  email: false
