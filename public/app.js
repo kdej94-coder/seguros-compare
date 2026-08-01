@@ -612,7 +612,7 @@ function generateExecutiveReport(data) {
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
             font-size: 11px;
-            color: #1e293b;
+            color: #1a2744;
             line-height: 1.55;
             background: #fff;
         }
@@ -657,7 +657,7 @@ function generateExecutiveReport(data) {
         }
         .section-text {
             font-size: 11px;
-            color: #334155;
+            color: #1a2744;
             margin-bottom: 10px;
             text-align: justify;
         }
@@ -712,12 +712,12 @@ function generateExecutiveReport(data) {
             background: #eef2f7;
         }
 
-        .text-green { color: #16a34a; font-weight: 700; }
-        .text-red { color: #dc2626; font-weight: 700; }
-        .text-winner { background: #ecfdf5 !important; }
+        .text-highlight { color: #dc2626; font-weight: 700; }
+        .text-blue { color: #1a2744; font-weight: 700; }
+        .text-winner { background: #e8edf5 !important; }
 
-        .check { color: #16a34a; font-weight: 700; }
-        .cross { color: #cbd5e1; }
+        .check { color: #1a2744; font-weight: 700; }
+        .cross { color: #94a3b8; }
 
         /* Footer */
         .page-footer {
@@ -729,7 +729,7 @@ function generateExecutiveReport(data) {
         }
 
         /* Winner highlight */
-        .winner-col { background: #f0fdf4 !important; }
+        .winner-col { background: #e8edf5 !important; }
 
         /* Print */
         @media print {
@@ -752,7 +752,7 @@ function generateExecutiveReport(data) {
             font-size: 12px;
         }
         .print-bar button {
-            background: #22c55e;
+            background: #1a2744;
             color: #fff;
             border: none;
             padding: 8px 24px;
@@ -760,8 +760,9 @@ function generateExecutiveReport(data) {
             font-weight: 700;
             cursor: pointer;
             font-size: 12px;
+            border: 1.5px solid #fff;
         }
-        .print-bar button:hover { background: #16a34a; }
+        .print-bar button:hover { background: #2d3f5e; }
         .content-wrapper { margin-top: 50px; padding: 20px; }
 
         .sub-label {
@@ -774,8 +775,8 @@ function generateExecutiveReport(data) {
 <body>
 
     <div class="print-bar no-print">
-        <span>📄 Reporte Ejecutivo — ${asegurado}</span>
-        <button onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+        <span>Reporte Ejecutivo - ${asegurado}</span>
+        <button onclick="window.print()">Imprimir / Guardar como PDF</button>
     </div>
 
     <div class="content-wrapper">
@@ -844,17 +845,17 @@ function generateExecutiveReport(data) {
                     ${proposals.map(p => {
                         if (!p.primaNeta) return '<td>—</td>';
                         const diff = p.primaNeta - cheapest.primaNeta;
-                        if (diff === 0) return '<td class="text-green">Más Baja ✓</td>';
-                        return `<td class="text-red">+${fmt(diff)}</td>`;
+                        if (diff === 0) return '<td class="text-blue">Mas Baja</td>';
+                        return `<td class="text-highlight">+${fmt(diff)}</td>`;
                     }).join('')}
                 </tr>
                 <tr>
-                    <td>% de Variación vs Más Baja</td>
+                    <td>% de Variacion vs Mas Baja</td>
                     ${proposals.map(p => {
                         if (!p.primaNeta || !cheapest.primaNeta) return '<td>—</td>';
                         const pct = ((p.primaNeta - cheapest.primaNeta) / cheapest.primaNeta) * 100;
-                        if (pct === 0) return '<td class="text-green">Base</td>';
-                        return `<td class="${pct > 0 ? 'text-red' : 'text-green'}">${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%</td>`;
+                        if (pct === 0) return '<td class="text-blue">Base</td>';
+                        return `<td class="text-highlight">${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%</td>`;
                     }).join('')}
                 </tr>` : ''}
                 <tr>
@@ -868,9 +869,9 @@ function generateExecutiveReport(data) {
         </table>
 
         ${recommendation ? `
-        <div style="background:#f0fdf4; border:1.5px solid #16a34a; border-radius:6px; padding:12px 16px; margin-top:12px;">
-            <strong style="color:#16a34a;">✓ RECOMENDACIÓN:</strong> <strong>${recommendation.ganador}</strong> presenta la propuesta más competitiva.
-            ${recommendation.razones ? recommendation.razones.map(r => `<br>• ${r}`).join('') : ''}
+        <div style="background:#e8edf5; border:1.5px solid #1a2744; border-radius:6px; padding:12px 16px; margin-top:12px;">
+            <strong style="color:#1a2744;">RECOMENDACION:</strong> <strong>${recommendation.ganador}</strong> presenta la propuesta mas competitiva.
+            ${recommendation.razones ? recommendation.razones.map(r => `<br>- ${r}`).join('') : ''}
         </div>` : ''}
     </div>
 
@@ -892,8 +893,8 @@ function generateExecutiveReport(data) {
                     <td>${concepto}</td>
                     ${proposals.map(p => {
                         const cov = p.coberturas?.find(c => c.concepto === concepto);
-                        if (cov && cov.amparada) return '<td class="check">✓ Amparada</td>';
-                        return '<td class="cross">✗</td>';
+                        if (cov && cov.amparada) return '<td class="check">Amparada</td>';
+                        return '<td class="cross">No Incluida</td>';
                     }).join('')}
                 </tr>`).join('')}
             </tbody>
@@ -958,15 +959,15 @@ function generateExecutiveReport(data) {
             <ul>
                 ${sortedByPrima.map((p, i) => {
                     const covCount = p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0;
-                    const rank = i === 0 ? '🥇 1er lugar' : i === 1 ? '🥈 2do lugar' : `${i+1}° lugar`;
-                    return `<li><strong>${rank} — ${p.aseguradora}:</strong> Prima Neta: ${fmt(p.primaNeta)} ${p.moneda || moneda} | Coberturas: ${covCount}.</li>`;
+                    const rank = `${i+1}er lugar`;
+                    return `<li><strong>${rank} - ${p.aseguradora}:</strong> Prima Neta: ${fmt(p.primaNeta)} ${p.moneda || moneda} | Coberturas: ${covCount}.</li>`;
                 }).join('\n                ')}
             </ul>
         </div>
 
         ${recommendation ? `
         <div style="background:#1a2744; color:#fff; border-radius:8px; padding:20px 24px; margin:20px 0;">
-            <h3 style="margin:0 0 8px 0; font-size:14px;">✓ MEJOR OPCIÓN RECOMENDADA: ${recommendation.ganador}</h3>
+            <h3 style="margin:0 0 8px 0; font-size:14px;">MEJOR OPCION RECOMENDADA: ${recommendation.ganador}</h3>
             <p style="margin:0; font-size:11px; opacity:0.9;">
                 ${recommendation.razones ? recommendation.razones.join(' ') : ''}
             </p>
