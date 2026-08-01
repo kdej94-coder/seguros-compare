@@ -496,12 +496,510 @@ function initClear() {
     });
 }
 
-// ─── Export / Print ──────────────────────────────────────────────────────────
-
 function initExport() {
-    document.getElementById('btnExportPDF').addEventListener('click', () => {
-        window.print();
+    document.getElementById('btnExportPDF').addEventListener('click', async () => {
+        try {
+            const res = await fetch('/api/proposals');
+            const data = await res.json();
+            if (!data.proposals || data.proposals.length === 0) {
+                alert('No hay propuestas cargadas para exportar. Suba al menos un PDF primero.');
+                return;
+            }
+            generateExecutiveReport(data);
+        } catch (err) {
+            console.error('Error generating report:', err);
+            alert('Error al generar el reporte.');
+        }
     });
+}
+
+function generateExecutiveReport(data) {
+    const { proposals, recommendation } = data;
+    const fmt = (n) => n ? '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+    const fmtPct = (n) => n !== null && n !== undefined ? (n >= 0 ? '+' : '') + n.toFixed(0) + '%' : '—';
+
+    // Extract common info from first proposal
+    const first = proposals.find(p => p.asegurado) || proposals[0];
+    const asegurado = first?.asegurado || 'Asegurado';
+    const domicilio = first?.domicilio || '';
+    const giro = first?.giro || 'Comercial e Inmobiliario';
+    const moneda = first?.moneda || 'MXN';
+    const today = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    // Find lowest prima (winner)
+    const withPrima = proposals.filter(p => p.primaNeta && p.primaNeta > 0);
+    const sortedByPrima = [...withPrima].sort((a, b) => a.primaNeta - b.primaNeta);
+    const cheapest = sortedByPrima[0];
+    const mostExpensive = sortedByPrima[sortedByPrima.length - 1];
+    const winner = recommendation?.ganador || cheapest?.aseguradora || '—';
+
+    // Compute sumas aseguradas totals from first proposal with data
+    const sumasSource = proposals.find(p => p.sumasAseguradas && Object.keys(p.sumasAseguradas).length > 0) || proposals[0];
+    const edificio = sumasSource?.sumasAseguradas?.edificio || 0;
+    const contenidos = sumasSource?.sumasAseguradas?.contenidos || 0;
+    const totalSumas = edificio + contenidos;
+
+    // Build evaluación text for each insurer
+    const evalTexts = proposals.map(p => {
+        const covCount = p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0;
+        const totalCov = p.coberturas ? p.coberturas.length : 25;
+        const isWinner = p.aseguradora === winner;
+        let text = `<strong>${p.aseguradora}:</strong> `;
+        if (p.primaNeta) {
+            text += `Presenta prima neta de ${fmt(p.primaNeta)} ${p.moneda || moneda}`;
+        } else {
+            text += `Prima neta no detectada en el PDF`;
+        }
+        text += `, con ${covCount} de ${totalCov} coberturas identificadas.`;
+        if (isWinner && withPrima.length > 1) {
+            text = `${text} <strong>Resulta en la propuesta económica más competitiva del mercado.</strong>`;
+        }
+        return text;
+    });
+
+    // Build comparison table rows
+    const conceptos = [
+        { label: 'Prima Neta', key: 'primaNeta', isMoney: true },
+        { label: 'Prima Total', key: 'primaTotal', isMoney: true },
+    ];
+
+    // Coberturas for matrix
+    const allConcepts = [];
+    const seenCov = new Set();
+    for (const p of proposals) {
+        if (p.coberturas) {
+            for (const c of p.coberturas) {
+                if (!seenCov.has(c.concepto)) {
+                    seenCov.add(c.concepto);
+                    allConcepts.push(c.concepto);
+                }
+            }
+        }
+    }
+
+    // Sumas aseguradas keys
+    const sumaKeys = new Set();
+    for (const p of proposals) {
+        if (p.sumasAseguradas) Object.keys(p.sumasAseguradas).forEach(k => sumaKeys.add(k));
+    }
+    const sumaLabels = {
+        edificio: 'Edificio', contenidos: 'Contenidos',
+        perdidasConsecuenciales: 'Pérdidas Consecuenciales', equipoElectronico: 'Equipo Electrónico',
+        roturaMaquinaria: 'Rotura de Maquinaria', responsabilidadCivil: 'Responsabilidad Civil',
+        dineroValores: 'Dinero y Valores', roturaCristales: 'Rotura de Cristales'
+    };
+
+    // Deducibles
+    const deducibleConcepts = [
+        'Incendio, rayo y explosión', 'Fenómenos hidrometeorológicos (FHM)',
+        'Terremoto y erupción volcánica', 'Responsabilidad Civil General',
+        'Rotura de Cristales', 'Equipo Electrónico (Fijo / Móvil)',
+        'Rotura de Maquinaria y Calderas', 'Dinero y Valores'
+    ];
+
+    // Count total pages
+    const totalPages = 4;
+
+    const reportHTML = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis Técnico y Comparativo de Renovación — ${asegurado}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            line-height: 1.55;
+            background: #fff;
+        }
+        @page {
+            size: letter;
+            margin: 20mm 18mm 22mm 18mm;
+        }
+        .page {
+            page-break-after: always;
+            position: relative;
+            min-height: 100%;
+        }
+        .page:last-child { page-break-after: auto; }
+
+        /* Header */
+        .report-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a2744;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+            border-bottom: 3px solid #1a2744;
+            padding-bottom: 8px;
+        }
+        .report-subtitle {
+            font-size: 11px;
+            color: #475569;
+            font-style: italic;
+            margin-bottom: 24px;
+        }
+
+        /* Sections */
+        .section-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #1a2744;
+            text-transform: uppercase;
+            margin: 22px 0 10px 0;
+            padding-left: 12px;
+            border-left: 4px solid #1a2744;
+        }
+        .section-text {
+            font-size: 11px;
+            color: #334155;
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+        .section-text ul {
+            margin-left: 20px;
+            margin-top: 6px;
+            margin-bottom: 8px;
+        }
+        .section-text ul li {
+            margin-bottom: 5px;
+        }
+        .section-text .highlight {
+            font-weight: 700;
+            color: #1a2744;
+        }
+
+        /* Tables */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 16px 0;
+            font-size: 10.5px;
+        }
+        .comp-table thead th {
+            background: #1a2744;
+            color: #fff;
+            font-weight: 700;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 10px;
+            border: 1px solid #1a2744;
+        }
+        .comp-table thead th:first-child {
+            text-align: left;
+            min-width: 180px;
+        }
+        .comp-table tbody td {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .comp-table tbody td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background: #f8fafc;
+        }
+        .comp-table tbody tr:nth-child(even) td {
+            background: #f1f5f9;
+        }
+        .comp-table tbody tr:nth-child(even) td:first-child {
+            background: #eef2f7;
+        }
+
+        .text-green { color: #16a34a; font-weight: 700; }
+        .text-red { color: #dc2626; font-weight: 700; }
+        .text-winner { background: #ecfdf5 !important; }
+
+        .check { color: #16a34a; font-weight: 700; }
+        .cross { color: #cbd5e1; }
+
+        /* Footer */
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+
+        /* Winner highlight */
+        .winner-col { background: #f0fdf4 !important; }
+
+        /* Print */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+
+        .print-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #1a2744;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 9999;
+            font-size: 12px;
+        }
+        .print-bar button {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .print-bar button:hover { background: #16a34a; }
+        .content-wrapper { margin-top: 50px; padding: 20px; }
+
+        .sub-label {
+            font-size: 9px;
+            color: #64748b;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-bar no-print">
+        <span>📄 Reporte Ejecutivo — ${asegurado}</span>
+        <button onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+    </div>
+
+    <div class="content-wrapper">
+
+    <!-- PAGE 1: Análisis de Mercado y Evaluación -->
+    <div class="page">
+        <h1 class="report-title">ANÁLISIS TÉCNICO Y COMPARATIVO DE RENOVACIÓN</h1>
+        <p class="report-subtitle">Programa de Seguro Paquete Empresarial Corporativo | Vigencia 2025-2026</p>
+
+        <h2 class="section-title">1. CONSIDERACIONES DE MERCADO</h2>
+        <div class="section-text">
+            <p>El mercado asegurador para giros comerciales e inmobiliarios ha mostrado un ajuste generalizado en tarifas. Se realizó la solicitud formal de cotización a las principales instituciones del mercado mexicano. El estatus final de las respuestas se detalla a continuación:</p>
+            <ul>
+                <li><strong>Ofertas Firmes Presentadas (${proposals.length}):</strong> ${proposals.map(p => p.aseguradora).join(', ')}.</li>
+                <li><strong>Moneda de Cotización:</strong> ${moneda}.</li>
+                <li><strong>Ubicación del Riesgo:</strong> ${domicilio || 'Ver póliza original.'}.</li>
+                <li><strong>Giro / Actividad:</strong> ${giro}.</li>
+            </ul>
+        </div>
+
+        <h2 class="section-title">2. EVALUACIÓN DE PROPUESTAS</h2>
+        <div class="section-text">
+            <p>El análisis con los costos actualizados del mercado muestra las siguientes condiciones por cada aseguradora participante:</p>
+            <ul>
+                ${evalTexts.map(t => `<li>${t}</li>`).join('\n                ')}
+            </ul>
+        </div>
+
+        <h2 class="section-title">3. GARANTÍAS POR PARTE DEL ASEGURADO</h2>
+        <div class="section-text">
+            <p>Para la validez plena del programa de seguros, el asegurado ratifica las siguientes garantías de protección vigentes:</p>
+            <ul>
+                <li><strong>Giro Declarado:</strong> ${giro || 'Comercial, Oficinas y Departamentos'}.</li>
+                <li><strong>Ubicación:</strong> ${domicilio || 'Ver póliza original.'}.</li>
+                <li><strong>Medidas de Protección Contra Incendio (PCI):</strong> Sistema basado en extintores portátiles distribuidos estratégicamente e hidrantes funcionales con mantenimiento periódico.</li>
+            </ul>
+        </div>
+
+        <h2 class="section-title">4. PROPUESTA ECONÓMICA</h2>
+        <div class="section-text">
+            ${totalSumas > 0 ? `<p>Los valores totales asegurados declarados se mantienen. Edificio por <strong>${fmt(edificio)}</strong> y Contenidos por <strong>${fmt(contenidos)}</strong>, sumando un valor total de <strong>${fmt(totalSumas)}</strong>. Los costos y variaciones del mercado se estructuran a continuación:</p>` : `<p>A continuación se presenta la propuesta económica comparativa entre las aseguradoras participantes:</p>`}
+        </div>
+
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Concepto (${moneda})</th>
+                    ${proposals.map(p => `<th>${p.aseguradora}<br><span style="font-weight:400; font-size:9px;">Propuesta Renovación</span></th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Prima Neta</td>
+                    ${proposals.map(p => {
+                        const isWin = p.aseguradora === winner;
+                        return `<td class="${isWin ? 'text-winner' : ''}" style="font-weight:700;">${fmt(p.primaNeta)}</td>`;
+                    }).join('')}
+                </tr>
+                <tr>
+                    <td>Prima Total</td>
+                    ${proposals.map(p => `<td>${fmt(p.primaTotal)}</td>`).join('')}
+                </tr>
+                ${cheapest && withPrima.length > 1 ? `
+                <tr>
+                    <td>Variación en Pesos ($) vs Más Baja</td>
+                    ${proposals.map(p => {
+                        if (!p.primaNeta) return '<td>—</td>';
+                        const diff = p.primaNeta - cheapest.primaNeta;
+                        if (diff === 0) return '<td class="text-green">Más Baja ✓</td>';
+                        return `<td class="text-red">+${fmt(diff)}</td>`;
+                    }).join('')}
+                </tr>
+                <tr>
+                    <td>% de Variación vs Más Baja</td>
+                    ${proposals.map(p => {
+                        if (!p.primaNeta || !cheapest.primaNeta) return '<td>—</td>';
+                        const pct = ((p.primaNeta - cheapest.primaNeta) / cheapest.primaNeta) * 100;
+                        if (pct === 0) return '<td class="text-green">Base</td>';
+                        return `<td class="${pct > 0 ? 'text-red' : 'text-green'}">${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%</td>`;
+                    }).join('')}
+                </tr>` : ''}
+                <tr>
+                    <td>Coberturas Detectadas</td>
+                    ${proposals.map(p => {
+                        const cc = p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0;
+                        return `<td>${cc} / ${p.coberturas?.length || 25}</td>`;
+                    }).join('')}
+                </tr>
+            </tbody>
+        </table>
+
+        ${recommendation ? `
+        <div style="background:#f0fdf4; border:1.5px solid #16a34a; border-radius:6px; padding:12px 16px; margin-top:12px;">
+            <strong style="color:#16a34a;">✓ RECOMENDACIÓN:</strong> <strong>${recommendation.ganador}</strong> presenta la propuesta más competitiva.
+            ${recommendation.razones ? recommendation.razones.map(r => `<br>• ${r}`).join('') : ''}
+        </div>` : ''}
+    </div>
+
+    <!-- PAGE 2: Coberturas Matrix -->
+    <div class="page">
+        <h1 class="report-title" style="font-size:16px;">MATRIZ COMPARATIVA DE COBERTURAS</h1>
+        <p class="report-subtitle">Coberturas identificadas en cada propuesta de renovación.</p>
+
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Cobertura</th>
+                    ${proposals.map(p => `<th>${p.aseguradora}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${allConcepts.map(concepto => `
+                <tr>
+                    <td>${concepto}</td>
+                    ${proposals.map(p => {
+                        const cov = p.coberturas?.find(c => c.concepto === concepto);
+                        if (cov && cov.amparada) return '<td class="check">✓ Amparada</td>';
+                        return '<td class="cross">✗</td>';
+                    }).join('')}
+                </tr>`).join('')}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGE 3: Deducibles -->
+    <div class="page">
+        <h1 class="report-title" style="font-size:16px;">CUADRO COMPARATIVO DE DEDUCIBLES</h1>
+        <p class="report-subtitle">Deducibles aplicables por cobertura y aseguradora.</p>
+
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Cobertura / Riesgo</th>
+                    ${proposals.map(p => `<th>${p.aseguradora}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${deducibleConcepts.map(concepto => `
+                <tr>
+                    <td>${concepto}</td>
+                    ${proposals.map(p => {
+                        const item = p.deducibles?.find(d => d.concepto === concepto);
+                        if (!item) return '<td>—</td>';
+                        return `<td><strong>${item.deducible}</strong><span class="sub-label">${item.observaciones}</span></td>`;
+                    }).join('')}
+                </tr>`).join('')}
+            </tbody>
+        </table>
+
+        ${Array.from(sumaKeys).length > 0 ? `
+        <h2 class="section-title" style="margin-top:30px;">SUMAS ASEGURADAS COMPARATIVAS</h2>
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    ${proposals.map(p => `<th>${p.aseguradora}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${Array.from(sumaKeys).map(key => `
+                <tr>
+                    <td>${sumaLabels[key] || key}</td>
+                    ${proposals.map(p => {
+                        const val = p.sumasAseguradas?.[key];
+                        return `<td>${val ? fmt(val) : '—'}</td>`;
+                    }).join('')}
+                </tr>`).join('')}
+            </tbody>
+        </table>` : ''}
+    </div>
+
+    <!-- PAGE 4: Conclusión -->
+    <div class="page">
+        <h1 class="report-title" style="font-size:16px;">CONCLUSIÓN Y RECOMENDACIÓN FINAL</h1>
+        <p class="report-subtitle">Resumen ejecutivo del análisis comparativo.</p>
+
+        <h2 class="section-title">RESUMEN EJECUTIVO</h2>
+        <div class="section-text">
+            <p>Tras el análisis técnico y económico de las <strong>${proposals.length} propuestas</strong> recibidas para la renovación del programa de seguros de <strong>${asegurado}</strong>, se concluye lo siguiente:</p>
+            <ul>
+                ${sortedByPrima.map((p, i) => {
+                    const covCount = p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0;
+                    const rank = i === 0 ? '🥇 1er lugar' : i === 1 ? '🥈 2do lugar' : `${i+1}° lugar`;
+                    return `<li><strong>${rank} — ${p.aseguradora}:</strong> Prima Neta: ${fmt(p.primaNeta)} ${p.moneda || moneda} | Coberturas: ${covCount}.</li>`;
+                }).join('\n                ')}
+            </ul>
+        </div>
+
+        ${recommendation ? `
+        <div style="background:#1a2744; color:#fff; border-radius:8px; padding:20px 24px; margin:20px 0;">
+            <h3 style="margin:0 0 8px 0; font-size:14px;">✓ MEJOR OPCIÓN RECOMENDADA: ${recommendation.ganador}</h3>
+            <p style="margin:0; font-size:11px; opacity:0.9;">
+                ${recommendation.razones ? recommendation.razones.join(' ') : ''}
+            </p>
+        </div>` : ''}
+
+        <div class="section-text" style="margin-top: 30px;">
+            <p><strong>Nota Importante:</strong> La presente recomendación se basa exclusivamente en el análisis de los documentos proporcionados (cotizaciones en formato PDF). Se sugiere al asegurado revisar las condiciones particulares, exclusiones y limitaciones de cada póliza antes de tomar una decisión final.</p>
+        </div>
+
+        <div style="margin-top:40px; display:flex; justify-content:space-between; gap:40px;">
+            <div style="flex:1; text-align:center; border-top: 1.5px solid #1a2744; padding-top:10px;">
+                <strong>Elaboró</strong><br>
+                <span style="font-size:10px; color:#64748b;">Ejecutivo de Cuenta</span>
+            </div>
+            <div style="flex:1; text-align:center; border-top: 1.5px solid #1a2744; padding-top:10px;">
+                <strong>Revisó</strong><br>
+                <span style="font-size:10px; color:#64748b;">Dirección Técnica</span>
+            </div>
+        </div>
+
+        <div style="margin-top:40px; text-align:center; font-size:9px; color:#94a3b8;">
+            <p>Reporte generado automáticamente por SegurosCompare — ${today}</p>
+            <p>Este documento es confidencial y de uso exclusivo del asegurado.</p>
+        </div>
+    </div>
+
+    </div>
+</body>
+</html>`;
+
+    const reportWindow = window.open('', '_blank');
+    reportWindow.document.write(reportHTML);
+    reportWindow.document.close();
 }
 
 // ─── Comparison History ──────────────────────────────────────────────────────

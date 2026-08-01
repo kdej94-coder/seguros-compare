@@ -1,0 +1,827 @@
+[
+  {
+    "id": "comp-1785617516907",
+    "nombre": "Nombre del AseguradoCondominio Torre Alta y/o Condóminos y/o Inquilinos — GNP vs INBURSA vs MAPFRE",
+    "fecha": "2026-08-01T20:51:27.006Z",
+    "proposals": [
+      {
+        "aseguradora": "GNP",
+        "moneda": "USD",
+        "asegurado": "Nombre del AseguradoCondominio Torre Alta y/o Condóminos y/o Inquilinos",
+        "domicilio": "1 AVE ROBLE NRO",
+        "giro": "ComercialOficinas públicas",
+        "primaNeta": 27479,
+        "primaTotal": 32027,
+        "sumasAseguradas": {
+          "equipoElectronico": 1100.97,
+          "responsabilidadCivil": 9297
+        },
+        "coberturas": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "amparada": true
+          },
+          {
+            "concepto": "Extensión de cubierta / Todo Riesgo",
+            "amparada": true
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "amparada": true
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "amparada": true
+          },
+          {
+            "concepto": "Inflación / Ajuste inflacionario",
+            "amparada": false
+          },
+          {
+            "concepto": "Remoción de escombros",
+            "amparada": true
+          },
+          {
+            "concepto": "Bienes bajo convenio expreso",
+            "amparada": false
+          },
+          {
+            "concepto": "Incisos conocidos / no conocidos",
+            "amparada": true
+          },
+          {
+            "concepto": "Compensación entre incisos",
+            "amparada": true
+          },
+          {
+            "concepto": "Huelgas y alborotos populares",
+            "amparada": false
+          },
+          {
+            "concepto": "Sabotaje y terrorismo",
+            "amparada": false
+          },
+          {
+            "concepto": "Derrame de protecciones contra incendio (PCI)",
+            "amparada": true
+          },
+          {
+            "concepto": "Objetos raros y de arte",
+            "amparada": true
+          },
+          {
+            "concepto": "Gastos de extinción",
+            "amparada": false
+          },
+          {
+            "concepto": "Mejoras y adaptaciones",
+            "amparada": false
+          },
+          {
+            "concepto": "Gastos extraordinarios",
+            "amparada": true
+          },
+          {
+            "concepto": "Pérdidas consecuenciales / Lucro cesante",
+            "amparada": true
+          },
+          {
+            "concepto": "Responsabilidad Civil Inmuebles y Actividades",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Cruzada / Asumida / Contratistas",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Estacionamiento",
+            "amparada": true
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "amparada": true
+          },
+          {
+            "concepto": "Equipo Electrónico Fijo / Móvil",
+            "amparada": true
+          },
+          {
+            "concepto": "Daños a Otras Propiedades (DOPA)",
+            "amparada": false
+          }
+        ],
+        "deducibles": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "deducible": "Sin deducible (0%)",
+            "observaciones": "Aplica a la suma asegurada de edificio y contenidos."
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "deducible": "1% al 2% sobre suma asegurada (Mín. 100 UMA)",
+            "observaciones": "Por evento. Aplica coaseguro del 10% al 15% sobre la pérdida."
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "deducible": "2% sobre suma asegurada (Mín. 200 UMA)",
+            "observaciones": "Por evento. Coaseguro del 10% sobre la indemnización."
+          },
+          {
+            "concepto": "Responsabilidad Civil General",
+            "deducible": "Sin deducible",
+            "observaciones": "Aplica sublímite según condiciones generales."
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "deducible": "10% sobre el monto de la pérdida",
+            "observaciones": "Mínimo 20 UMA por cristal afectado."
+          },
+          {
+            "concepto": "Equipo Electrónico (Fijo / Móvil)",
+            "deducible": "10% sobre la pérdida (Mín. 30 UMA)",
+            "observaciones": "En equipo portátil aplica 15% por robo o caída."
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "deducible": "10% sobre la pérdida (Mín. 50 UMA)",
+            "observaciones": "Por evento o falla mecánica/eléctrica."
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "deducible": "10% sobre el monto del robo (Mín. 30 UMA)",
+            "observaciones": "Aplica dentro y fuera de locales bajo custodia."
+          }
+        ],
+        "archivo": "GNP _ PDF CotizaciÃ³n.pdf",
+        "fechaProcesado": "2026-08-01T20:51:26.783Z"
+      },
+      {
+        "aseguradora": "INBURSA",
+        "moneda": "USD",
+        "asegurado": "CONDOMINIO TORRE ALTA Y/O CONDOMINOS Y/O INQUILINOS",
+        "domicilio": "AVE ROBLE NRO 300 COL. VALLE DEL CAMPESTRE MUNICIPIO SAN PEDRO GARZA NUEVO  LEON C.P. 66265",
+        "giro": "del",
+        "primaNeta": 140313.73,
+        "primaTotal": 163923.93,
+        "sumasAseguradas": {
+          "edificio": 39293100,
+          "contenidos": 2419374.96
+        },
+        "coberturas": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "amparada": true
+          },
+          {
+            "concepto": "Extensión de cubierta / Todo Riesgo",
+            "amparada": true
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "amparada": true
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "amparada": true
+          },
+          {
+            "concepto": "Inflación / Ajuste inflacionario",
+            "amparada": true
+          },
+          {
+            "concepto": "Remoción de escombros",
+            "amparada": true
+          },
+          {
+            "concepto": "Bienes bajo convenio expreso",
+            "amparada": true
+          },
+          {
+            "concepto": "Incisos conocidos / no conocidos",
+            "amparada": true
+          },
+          {
+            "concepto": "Compensación entre incisos",
+            "amparada": false
+          },
+          {
+            "concepto": "Huelgas y alborotos populares",
+            "amparada": true
+          },
+          {
+            "concepto": "Sabotaje y terrorismo",
+            "amparada": true
+          },
+          {
+            "concepto": "Derrame de protecciones contra incendio (PCI)",
+            "amparada": true
+          },
+          {
+            "concepto": "Objetos raros y de arte",
+            "amparada": true
+          },
+          {
+            "concepto": "Gastos de extinción",
+            "amparada": false
+          },
+          {
+            "concepto": "Mejoras y adaptaciones",
+            "amparada": false
+          },
+          {
+            "concepto": "Gastos extraordinarios",
+            "amparada": false
+          },
+          {
+            "concepto": "Pérdidas consecuenciales / Lucro cesante",
+            "amparada": true
+          },
+          {
+            "concepto": "Responsabilidad Civil Inmuebles y Actividades",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Cruzada / Asumida / Contratistas",
+            "amparada": false
+          },
+          {
+            "concepto": "RC Estacionamiento",
+            "amparada": true
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "amparada": true
+          },
+          {
+            "concepto": "Equipo Electrónico Fijo / Móvil",
+            "amparada": true
+          },
+          {
+            "concepto": "Daños a Otras Propiedades (DOPA)",
+            "amparada": false
+          }
+        ],
+        "deducibles": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "deducible": "Sin deducible (0%)",
+            "observaciones": "Aplica a la suma asegurada de edificio y contenidos."
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "deducible": "1% sobre suma asegurada (Mín. 150 UMA)",
+            "observaciones": "Por evento. Aplica coaseguro del 10% al 15% sobre la pérdida."
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "deducible": "2% al 5% sobre suma asegurada",
+            "observaciones": "Por evento. Coaseguro del 10% sobre la indemnización."
+          },
+          {
+            "concepto": "Responsabilidad Civil General",
+            "deducible": "Sin deducible",
+            "observaciones": "Aplica sublímite según condiciones generales."
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "deducible": "10% sobre el monto de la pérdida",
+            "observaciones": "Mínimo 20 UMA por cristal afectado."
+          },
+          {
+            "concepto": "Equipo Electrónico (Fijo / Móvil)",
+            "deducible": "10% sobre la pérdida (Mín. 30 UMA)",
+            "observaciones": "En equipo portátil aplica 15% por robo o caída."
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "deducible": "10% sobre la pérdida (Mín. 50 UMA)",
+            "observaciones": "Por evento o falla mecánica/eléctrica."
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "deducible": "10% sobre el monto del robo (Mín. 30 UMA)",
+            "observaciones": "Aplica dentro y fuera de locales bajo custodia."
+          }
+        ],
+        "archivo": "INBURSA _ CONDOMINIO TORRE ALTA 2025.pdf",
+        "fechaProcesado": "2026-08-01T20:51:26.903Z"
+      },
+      {
+        "aseguradora": "MAPFRE",
+        "moneda": "USD",
+        "asegurado": "CONDOMINIO TORREALTA",
+        "domicilio": "FISCAL: UBICACIÓN ASEGURADA:",
+        "giro": "TIPO CONSTRUCTIVO:CONSTA DE: PLANTA BAJA Y QUINCE NIVELES ALTOS",
+        "primaNeta": 21454.99,
+        "primaTotal": 25119.79,
+        "sumasAseguradas": {
+          "edificio": 39293100,
+          "contenidos": 2419374.96,
+          "perdidasConsecuenciales": 5000000,
+          "equipoElectronico": 457576,
+          "roturaMaquinaria": 1997517,
+          "dineroValores": 4000,
+          "roturaCristales": 25000
+        },
+        "coberturas": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "amparada": true
+          },
+          {
+            "concepto": "Extensión de cubierta / Todo Riesgo",
+            "amparada": false
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "amparada": true
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "amparada": true
+          },
+          {
+            "concepto": "Inflación / Ajuste inflacionario",
+            "amparada": false
+          },
+          {
+            "concepto": "Remoción de escombros",
+            "amparada": true
+          },
+          {
+            "concepto": "Bienes bajo convenio expreso",
+            "amparada": true
+          },
+          {
+            "concepto": "Incisos conocidos / no conocidos",
+            "amparada": true
+          },
+          {
+            "concepto": "Compensación entre incisos",
+            "amparada": false
+          },
+          {
+            "concepto": "Huelgas y alborotos populares",
+            "amparada": true
+          },
+          {
+            "concepto": "Sabotaje y terrorismo",
+            "amparada": true
+          },
+          {
+            "concepto": "Derrame de protecciones contra incendio (PCI)",
+            "amparada": true
+          },
+          {
+            "concepto": "Objetos raros y de arte",
+            "amparada": true
+          },
+          {
+            "concepto": "Gastos de extinción",
+            "amparada": true
+          },
+          {
+            "concepto": "Mejoras y adaptaciones",
+            "amparada": false
+          },
+          {
+            "concepto": "Gastos extraordinarios",
+            "amparada": true
+          },
+          {
+            "concepto": "Pérdidas consecuenciales / Lucro cesante",
+            "amparada": true
+          },
+          {
+            "concepto": "Responsabilidad Civil Inmuebles y Actividades",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Cruzada / Asumida / Contratistas",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Estacionamiento",
+            "amparada": true
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "amparada": true
+          },
+          {
+            "concepto": "Equipo Electrónico Fijo / Móvil",
+            "amparada": true
+          },
+          {
+            "concepto": "Daños a Otras Propiedades (DOPA)",
+            "amparada": true
+          }
+        ],
+        "deducibles": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "deducible": "Sin deducible (0%)",
+            "observaciones": "Aplica a la suma asegurada de edificio y contenidos."
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "deducible": "1% al 2% sobre suma asegurada (Mín. 100 UMA)",
+            "observaciones": "Por evento. Aplica coaseguro del 10% al 15% sobre la pérdida."
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "deducible": "2% al 5% sobre suma asegurada",
+            "observaciones": "Por evento. Coaseguro del 10% sobre la indemnización."
+          },
+          {
+            "concepto": "Responsabilidad Civil General",
+            "deducible": "Sin deducible",
+            "observaciones": "Aplica sublímite según condiciones generales."
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "deducible": "10% sobre el monto de la pérdida",
+            "observaciones": "Mínimo 20 UMA por cristal afectado."
+          },
+          {
+            "concepto": "Equipo Electrónico (Fijo / Móvil)",
+            "deducible": "10% sobre la pérdida (Mín. 30 UMA)",
+            "observaciones": "En equipo portátil aplica 15% por robo o caída."
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "deducible": "10% sobre la pérdida (Mín. 50 UMA)",
+            "observaciones": "Por evento o falla mecánica/eléctrica."
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "deducible": "10% sobre el monto del robo (Mín. 30 UMA)",
+            "observaciones": "Aplica dentro y fuera de locales bajo custodia."
+          }
+        ],
+        "archivo": "MAPFRE _ PROP 392 TORREALTA 325150410355703 (1).pdf",
+        "fechaProcesado": "2026-08-01T20:51:26.983Z"
+      }
+    ],
+    "recommendation": {
+      "ganador": "MAPFRE",
+      "score": 152.5,
+      "razones": [
+        "Prima neta competitiva: $21,454.99 USD.",
+        "21 coberturas identificadas en la cotización.",
+        "Ahorro de $6,024.01 USD vs GNP.",
+        "Propuesta más completa según análisis de datos extraídos del PDF."
+      ],
+      "ganadorData": {
+        "aseguradora": "MAPFRE",
+        "moneda": "USD",
+        "asegurado": "CONDOMINIO TORREALTA",
+        "domicilio": "FISCAL: UBICACIÓN ASEGURADA:",
+        "giro": "TIPO CONSTRUCTIVO:CONSTA DE: PLANTA BAJA Y QUINCE NIVELES ALTOS",
+        "primaNeta": 21454.99,
+        "primaTotal": 25119.79,
+        "sumasAseguradas": {
+          "edificio": 39293100,
+          "contenidos": 2419374.96,
+          "perdidasConsecuenciales": 5000000,
+          "equipoElectronico": 457576,
+          "roturaMaquinaria": 1997517,
+          "dineroValores": 4000,
+          "roturaCristales": 25000
+        },
+        "coberturas": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "amparada": true
+          },
+          {
+            "concepto": "Extensión de cubierta / Todo Riesgo",
+            "amparada": false
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "amparada": true
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "amparada": true
+          },
+          {
+            "concepto": "Inflación / Ajuste inflacionario",
+            "amparada": false
+          },
+          {
+            "concepto": "Remoción de escombros",
+            "amparada": true
+          },
+          {
+            "concepto": "Bienes bajo convenio expreso",
+            "amparada": true
+          },
+          {
+            "concepto": "Incisos conocidos / no conocidos",
+            "amparada": true
+          },
+          {
+            "concepto": "Compensación entre incisos",
+            "amparada": false
+          },
+          {
+            "concepto": "Huelgas y alborotos populares",
+            "amparada": true
+          },
+          {
+            "concepto": "Sabotaje y terrorismo",
+            "amparada": true
+          },
+          {
+            "concepto": "Derrame de protecciones contra incendio (PCI)",
+            "amparada": true
+          },
+          {
+            "concepto": "Objetos raros y de arte",
+            "amparada": true
+          },
+          {
+            "concepto": "Gastos de extinción",
+            "amparada": true
+          },
+          {
+            "concepto": "Mejoras y adaptaciones",
+            "amparada": false
+          },
+          {
+            "concepto": "Gastos extraordinarios",
+            "amparada": true
+          },
+          {
+            "concepto": "Pérdidas consecuenciales / Lucro cesante",
+            "amparada": true
+          },
+          {
+            "concepto": "Responsabilidad Civil Inmuebles y Actividades",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Cruzada / Asumida / Contratistas",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Estacionamiento",
+            "amparada": true
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "amparada": true
+          },
+          {
+            "concepto": "Equipo Electrónico Fijo / Móvil",
+            "amparada": true
+          },
+          {
+            "concepto": "Daños a Otras Propiedades (DOPA)",
+            "amparada": true
+          }
+        ],
+        "deducibles": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "deducible": "Sin deducible (0%)",
+            "observaciones": "Aplica a la suma asegurada de edificio y contenidos."
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "deducible": "1% al 2% sobre suma asegurada (Mín. 100 UMA)",
+            "observaciones": "Por evento. Aplica coaseguro del 10% al 15% sobre la pérdida."
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "deducible": "2% al 5% sobre suma asegurada",
+            "observaciones": "Por evento. Coaseguro del 10% sobre la indemnización."
+          },
+          {
+            "concepto": "Responsabilidad Civil General",
+            "deducible": "Sin deducible",
+            "observaciones": "Aplica sublímite según condiciones generales."
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "deducible": "10% sobre el monto de la pérdida",
+            "observaciones": "Mínimo 20 UMA por cristal afectado."
+          },
+          {
+            "concepto": "Equipo Electrónico (Fijo / Móvil)",
+            "deducible": "10% sobre la pérdida (Mín. 30 UMA)",
+            "observaciones": "En equipo portátil aplica 15% por robo o caída."
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "deducible": "10% sobre la pérdida (Mín. 50 UMA)",
+            "observaciones": "Por evento o falla mecánica/eléctrica."
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "deducible": "10% sobre el monto del robo (Mín. 30 UMA)",
+            "observaciones": "Aplica dentro y fuera de locales bajo custodia."
+          }
+        ],
+        "archivo": "MAPFRE _ PROP 392 TORREALTA 325150410355703 (1).pdf",
+        "fechaProcesado": "2026-08-01T20:51:26.983Z",
+        "score": 152.5
+      },
+      "segundoLugar": {
+        "aseguradora": "GNP",
+        "moneda": "USD",
+        "asegurado": "Nombre del AseguradoCondominio Torre Alta y/o Condóminos y/o Inquilinos",
+        "domicilio": "1 AVE ROBLE NRO",
+        "giro": "ComercialOficinas públicas",
+        "primaNeta": 27479,
+        "primaTotal": 32027,
+        "sumasAseguradas": {
+          "equipoElectronico": 1100.97,
+          "responsabilidadCivil": 9297
+        },
+        "coberturas": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "amparada": true
+          },
+          {
+            "concepto": "Extensión de cubierta / Todo Riesgo",
+            "amparada": true
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "amparada": true
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "amparada": true
+          },
+          {
+            "concepto": "Inflación / Ajuste inflacionario",
+            "amparada": false
+          },
+          {
+            "concepto": "Remoción de escombros",
+            "amparada": true
+          },
+          {
+            "concepto": "Bienes bajo convenio expreso",
+            "amparada": false
+          },
+          {
+            "concepto": "Incisos conocidos / no conocidos",
+            "amparada": true
+          },
+          {
+            "concepto": "Compensación entre incisos",
+            "amparada": true
+          },
+          {
+            "concepto": "Huelgas y alborotos populares",
+            "amparada": false
+          },
+          {
+            "concepto": "Sabotaje y terrorismo",
+            "amparada": false
+          },
+          {
+            "concepto": "Derrame de protecciones contra incendio (PCI)",
+            "amparada": true
+          },
+          {
+            "concepto": "Objetos raros y de arte",
+            "amparada": true
+          },
+          {
+            "concepto": "Gastos de extinción",
+            "amparada": false
+          },
+          {
+            "concepto": "Mejoras y adaptaciones",
+            "amparada": false
+          },
+          {
+            "concepto": "Gastos extraordinarios",
+            "amparada": true
+          },
+          {
+            "concepto": "Pérdidas consecuenciales / Lucro cesante",
+            "amparada": true
+          },
+          {
+            "concepto": "Responsabilidad Civil Inmuebles y Actividades",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Cruzada / Asumida / Contratistas",
+            "amparada": true
+          },
+          {
+            "concepto": "RC Estacionamiento",
+            "amparada": true
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "amparada": true
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "amparada": true
+          },
+          {
+            "concepto": "Equipo Electrónico Fijo / Móvil",
+            "amparada": true
+          },
+          {
+            "concepto": "Daños a Otras Propiedades (DOPA)",
+            "amparada": false
+          }
+        ],
+        "deducibles": [
+          {
+            "concepto": "Incendio, rayo y explosión",
+            "deducible": "Sin deducible (0%)",
+            "observaciones": "Aplica a la suma asegurada de edificio y contenidos."
+          },
+          {
+            "concepto": "Fenómenos hidrometeorológicos (FHM)",
+            "deducible": "1% al 2% sobre suma asegurada (Mín. 100 UMA)",
+            "observaciones": "Por evento. Aplica coaseguro del 10% al 15% sobre la pérdida."
+          },
+          {
+            "concepto": "Terremoto y erupción volcánica",
+            "deducible": "2% sobre suma asegurada (Mín. 200 UMA)",
+            "observaciones": "Por evento. Coaseguro del 10% sobre la indemnización."
+          },
+          {
+            "concepto": "Responsabilidad Civil General",
+            "deducible": "Sin deducible",
+            "observaciones": "Aplica sublímite según condiciones generales."
+          },
+          {
+            "concepto": "Rotura de Cristales",
+            "deducible": "10% sobre el monto de la pérdida",
+            "observaciones": "Mínimo 20 UMA por cristal afectado."
+          },
+          {
+            "concepto": "Equipo Electrónico (Fijo / Móvil)",
+            "deducible": "10% sobre la pérdida (Mín. 30 UMA)",
+            "observaciones": "En equipo portátil aplica 15% por robo o caída."
+          },
+          {
+            "concepto": "Rotura de Maquinaria y Calderas",
+            "deducible": "10% sobre la pérdida (Mín. 50 UMA)",
+            "observaciones": "Por evento o falla mecánica/eléctrica."
+          },
+          {
+            "concepto": "Dinero y Valores",
+            "deducible": "10% sobre el monto del robo (Mín. 30 UMA)",
+            "observaciones": "Aplica dentro y fuera de locales bajo custodia."
+          }
+        ],
+        "archivo": "GNP _ PDF CotizaciÃ³n.pdf",
+        "fechaProcesado": "2026-08-01T20:51:26.783Z",
+        "score": 137
+      }
+    },
+    "totalProposals": 3
+  }
+]
