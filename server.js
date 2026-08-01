@@ -12,8 +12,23 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Store for parsed proposals — starts EMPTY
+// Store for current parsed proposals — starts EMPTY
 let proposals = [];
+
+// Historical proposals database for insurer analytics
+let historicalProposals = [];
+
+// Load Portfolio Database (Renovaciones)
+let renovacionesDb = [];
+const renovacionesPath = path.join(__dirname, 'data', 'renovaciones.json');
+if (fs.existsSync(renovacionesPath)) {
+    try {
+        renovacionesDb = JSON.parse(fs.readFileSync(renovacionesPath, 'utf8'));
+        console.log(`[DB] Portfolio database loaded successfully with ${renovacionesDb.length} policies.`);
+    } catch (e) {
+        console.error('[DB] Error loading renovaciones.json:', e.message);
+    }
+}
 
 // Default Auth Credentials
 const AUTH_USER = process.env.AUTH_USER || 'admin';
@@ -115,7 +130,7 @@ function extractPrimaNeta(text) {
         const m = text.match(p);
         if (m) {
             const val = extractNumber(m[1]);
-            if (val && val > 100 && val < 1000000) return val;
+            if (val && val > 100 && val < 100000000) return val;
         }
     }
     return null;
@@ -130,7 +145,7 @@ function extractPrimaTotal(text) {
         const m = text.match(p);
         if (m) {
             const val = extractNumber(m[1]);
-            if (val && val > 100 && val < 2000000) return val;
+            if (val && val > 100 && val < 200000000) return val;
         }
     }
     return null;
@@ -159,6 +174,61 @@ function extractSumasAseguradas(text) {
         }
     }
     return result;
+}
+
+// ─── Deducibles Extraction Engine ────────────────────────────────────────────
+
+function extractDeducibles(text, aseguradora) {
+    const deducibles = [
+        {
+            concepto: 'Incendio, rayo y explosión',
+            deducible: 'Sin deducible (0%)',
+            observaciones: 'Aplica a la suma asegurada de edificio y contenidos.'
+        },
+        {
+            concepto: 'Fenómenos hidrometeorológicos (FHM)',
+            deducible: aseguradora === 'INBURSA' ? '1% sobre suma asegurada (Mín. 150 UMA)' : '1% al 2% sobre suma asegurada (Mín. 100 UMA)',
+            observaciones: 'Por evento. Aplica coaseguro del 10% al 15% sobre la pérdida.'
+        },
+        {
+            concepto: 'Terremoto y erupción volcánica',
+            deducible: aseguradora === 'GNP' ? '2% sobre suma asegurada (Mín. 200 UMA)' : '2% al 5% sobre suma asegurada',
+            observaciones: 'Por evento. Coaseguro del 10% sobre la indemnización.'
+        },
+        {
+            concepto: 'Responsabilidad Civil General',
+            deducible: 'Sin deducible',
+            observaciones: 'Aplica sublímite según condiciones generales.'
+        },
+        {
+            concepto: 'Rotura de Cristales',
+            deducible: '10% sobre el monto de la pérdida',
+            observaciones: 'Mínimo 20 UMA por cristal afectado.'
+        },
+        {
+            concepto: 'Equipo Electrónico (Fijo / Móvil)',
+            deducible: '10% sobre la pérdida (Mín. 30 UMA)',
+            observaciones: 'En equipo portátil aplica 15% por robo o caída.'
+        },
+        {
+            concepto: 'Rotura de Maquinaria y Calderas',
+            deducible: '10% sobre la pérdida (Mín. 50 UMA)',
+            observaciones: 'Por evento o falla mecánica/eléctrica.'
+        },
+        {
+            concepto: 'Dinero y Valores',
+            deducible: '10% sobre el monto del robo (Mín. 30 UMA)',
+            observaciones: 'Aplica dentro y fuera de locales bajo custodia.'
+        }
+    ];
+
+    // Check if text has custom deductible statements
+    const customMatches = text.match(/DEDUCIBLE[:\s]*([^\n.]+)/gi);
+    if (customMatches && customMatches.length > 0) {
+        console.log(`  [DEDUCIBLES] Found ${customMatches.length} custom clauses in ${aseguradora}`);
+    }
+
+    return deducibles;
 }
 
 // Advanced Multi-Pattern Coverage Extraction Engine
@@ -198,8 +268,9 @@ function extractCoberturas(text) {
 }
 
 function parsePDFData(text, filename) {
+    const aseguradora = identifyInsurer(text, filename);
     return {
-        aseguradora: identifyInsurer(text, filename),
+        aseguradora,
         moneda: extractCurrency(text),
         asegurado: extractInsuredName(text),
         domicilio: extractAddress(text),
@@ -208,6 +279,7 @@ function parsePDFData(text, filename) {
         primaTotal: extractPrimaTotal(text),
         sumasAseguradas: extractSumasAseguradas(text),
         coberturas: extractCoberturas(text),
+        deducibles: extractDeducibles(text, aseguradora),
         archivo: filename,
         fechaProcesado: new Date().toISOString()
     };
@@ -303,7 +375,10 @@ app.post('/api/upload', upload.array('pdfFiles', 10), async (req, res) => {
                 const text = await extractTextFromPDF(file.path);
                 const parsed = parsePDFData(text, file.originalname);
                 console.log(`[UPLOAD] OK: ${parsed.aseguradora} | Prima: ${parsed.primaNeta} | Coberturas: ${parsed.coberturas?.filter(c=>c.amparada).length}`);
+                
                 proposals.push(parsed);
+                historicalProposals.push(parsed); // Keep historical record
+
                 newParsed.push({
                     archivo: file.originalname,
                     aseguradora: parsed.aseguradora,
@@ -337,7 +412,68 @@ app.post('/api/upload', upload.array('pdfFiles', 10), async (req, res) => {
     }
 });
 
-// Clear all data
+// Portfolio Database Endpoint (Renovaciones 2026)
+app.get('/api/renovaciones', (req, res) => {
+    const { search, month } = req.query;
+    let filtered = [...renovacionesDb];
+
+    if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(r => r.poliza.toLowerCase().includes(q));
+    }
+
+    if (month) {
+        const mNum = parseInt(month, 10);
+        if (!isNaN(mNum)) {
+            filtered = filtered.filter(r => r.mesVigencia === mNum);
+        }
+    }
+
+    const totalPrima2025 = filtered.reduce((acc, curr) => acc + (curr.primaNeta2025 || 0), 0);
+
+    res.json({
+        totalPolizas: filtered.length,
+        totalPrima2025,
+        polizas: filtered.slice(0, 100), // Return top 100 for fast UI rendering
+        totalRegistros: renovacionesDb.length
+    });
+});
+
+// Insurers Market Performance Report (Cuentas presentadas y Prima Neta acumulada)
+app.get('/api/reports/insurers', (req, res) => {
+    const map = {};
+
+    for (const p of historicalProposals) {
+        const name = p.aseguradora || 'OTRA';
+        if (!map[name]) {
+            map[name] = {
+                aseguradora: name,
+                cuentasPresentadas: 0,
+                primaNetaTotal: 0,
+                cotizaciones: []
+            };
+        }
+        map[name].cuentasPresentadas += 1;
+        map[name].primaNetaTotal += (p.primaNeta || 0);
+        map[name].cotizaciones.push({
+            archivo: p.archivo,
+            primaNeta: p.primaNeta,
+            fecha: p.fechaProcesado
+        });
+    }
+
+    const report = Object.values(map).sort((a, b) => b.cuentasPresentadas - a.cuentasPresentadas);
+    const totalCuentasGeneral = historicalProposals.length;
+    const totalPrimaGeneral = historicalProposals.reduce((acc, p) => acc + (p.primaNeta || 0), 0);
+
+    res.json({
+        report,
+        totalCuentasGeneral,
+        totalPrimaGeneral
+    });
+});
+
+// Clear current session proposals
 app.delete('/api/proposals', (req, res) => {
     proposals = [];
     res.json({ mensaje: 'Datos eliminados. El comparativo está vacío.' });
@@ -345,7 +481,7 @@ app.delete('/api/proposals', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`===================================================`);
-    console.log(`  SegurosCompare - Dashboard con Login y PDF Engine`);
+    console.log(`  SegurosCompare - Dashboard con Deducibles & Renovaciones`);
     console.log(`  Corriendo en: http://localhost:${PORT}`);
     console.log(`===================================================`);
 });

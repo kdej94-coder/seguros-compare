@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initUpload();
     initClear();
     initExport();
+    initPortfolioSearch();
 });
 
 // ─── Authentication Logic ───────────────────────────────────────────────────
@@ -22,6 +23,8 @@ function initAuth() {
             appMain.style.filter = 'none';
             appMain.style.pointerEvents = 'auto';
             loadData();
+            loadCartera();
+            loadInsurersReport();
         } else {
             loginModal.style.display = 'flex';
             appMain.style.filter = 'blur(8px)';
@@ -102,7 +105,6 @@ function renderAll(data) {
     document.getElementById('btnClear').style.display = hasData ? 'flex' : 'none';
 
     if (hasData) {
-        // Fill info banner with first available data
         const first = proposals.find(p => p.asegurado) || proposals[0];
         document.getElementById('infoAsegurado').textContent = first.asegurado || '—';
         document.getElementById('infoDomicilio').textContent = first.domicilio ? first.domicilio.substring(0, 60) : '—';
@@ -114,7 +116,9 @@ function renderAll(data) {
     renderRecommendation(recommendation, hasData);
     renderResumen(proposals, hasData);
     renderCoberturas(proposals, hasData);
+    renderDeducibles(proposals, hasData);
     renderSumas(proposals, hasData);
+    loadInsurersReport();
 }
 
 // ─── Render: Recommendation ──────────────────────────────────────────────────
@@ -238,13 +242,11 @@ function renderCoberturas(proposals, hasData) {
     const head = document.getElementById('coberturasHead');
     const body = document.getElementById('coberturasBody');
 
-    // Build dynamic header
     head.innerHTML = `<tr>
         <th style="min-width: 240px;">Cobertura</th>
         ${proposals.map(p => `<th>${p.aseguradora}</th>`).join('')}
     </tr>`;
 
-    // Get all unique coverage concepts
     const allConcepts = [];
     const seen = new Set();
     for (const p of proposals) {
@@ -266,6 +268,56 @@ function renderCoberturas(proposals, hasData) {
                 return `<td><span class="text-amparada"><i class="fa-solid fa-circle-check"></i> Amparada</span></td>`;
             }
             return `<td><span class="text-excluida"><i class="fa-solid fa-circle-xmark"></i> No detectada</span></td>`;
+        }).join('');
+        return `<tr><td><strong>${concepto}</strong></td>${cells}</tr>`;
+    }).join('');
+}
+
+// ─── Render: Deducibles Matrix ───────────────────────────────────────────────
+
+function renderDeducibles(proposals, hasData) {
+    const emptyEl = document.getElementById('deduciblesEmpty');
+    const contentEl = document.getElementById('deduciblesContent');
+
+    if (!hasData) {
+        emptyEl.style.display = 'flex';
+        contentEl.style.display = 'none';
+        return;
+    }
+
+    emptyEl.style.display = 'none';
+    contentEl.style.display = 'block';
+
+    const head = document.getElementById('deduciblesHead');
+    const body = document.getElementById('deduciblesBody');
+
+    head.innerHTML = `<tr>
+        <th style="min-width: 240px;">Cobertura / Riesgo</th>
+        ${proposals.map(p => `<th>${p.aseguradora}</th>`).join('')}
+    </tr>`;
+
+    // Extract unique concepts from deducibles
+    const concepts = [
+        'Incendio, rayo y explosión',
+        'Fenómenos hidrometeorológicos (FHM)',
+        'Terremoto y erupción volcánica',
+        'Responsabilidad Civil General',
+        'Rotura de Cristales',
+        'Equipo Electrónico (Fijo / Móvil)',
+        'Rotura de Maquinaria y Calderas',
+        'Dinero y Valores'
+    ];
+
+    body.innerHTML = concepts.map(concepto => {
+        const cells = proposals.map(p => {
+            const item = p.deducibles?.find(d => d.concepto === concepto);
+            if (!item) return '<td>—</td>';
+            return `
+                <td>
+                    <strong style="color: var(--text-primary); font-size:12px;">${item.deducible}</strong>
+                    <span class="deducible-obs">${item.observaciones}</span>
+                </td>
+            `;
         }).join('');
         return `<tr><td><strong>${concepto}</strong></td>${cells}</tr>`;
     }).join('');
@@ -294,7 +346,6 @@ function renderSumas(proposals, hasData) {
         ${proposals.map(p => `<th>${p.aseguradora}</th>`).join('')}
     </tr>`;
 
-    // Collect all sumas keys
     const allKeys = new Set();
     for (const p of proposals) {
         if (p.sumasAseguradas) {
@@ -320,6 +371,71 @@ function renderSumas(proposals, hasData) {
         }).join('');
         return `<tr><td><strong>${labels[key] || key}</strong></td>${cells}</tr>`;
     }).join('');
+}
+
+// ─── Load Cartera & Insurers Market Report ───────────────────────────────────
+
+async function loadCartera(query = '') {
+    try {
+        const res = await fetch(`/api/renovaciones?search=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        document.getElementById('statTotalPolizas').textContent = data.totalRegistros.toLocaleString();
+        document.getElementById('statPrima2025').textContent = '$' + data.totalPrima2025.toLocaleString('es-MX', { minimumFractionDigits: 2 });
+
+        const tbody = document.getElementById('portfolioBody');
+        if (data.polizas && data.polizas.length > 0) {
+            tbody.innerHTML = data.polizas.map(p => `
+                <tr>
+                    <td><strong>${p.poliza}</strong></td>
+                    <td>${p.finVigencia}</td>
+                    <td>Mes ${p.mesVigencia} (${p.nombreMes})</td>
+                    <td style="color:var(--accent-indigo); font-weight:600;">$${p.primaNeta2025 ? p.primaNeta2025.toLocaleString('es-MX', { minimumFractionDigits: 2 }) : '0.00'}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No se encontraron pólizas.</td></tr>`;
+        }
+
+    } catch (err) {
+        console.error('Error cargando cartera:', err);
+    }
+}
+
+async function loadInsurersReport() {
+    try {
+        const res = await fetch('/api/reports/insurers');
+        const data = await res.json();
+
+        document.getElementById('statCotizacionesProcesadas').textContent = data.totalCuentasGeneral;
+
+        const tbody = document.getElementById('insurersReportBody');
+        if (data.report && data.report.length > 0) {
+            tbody.innerHTML = data.report.map(r => {
+                const pct = data.totalPrimaGeneral > 0 ? ((r.primaNetaTotal / data.totalPrimaGeneral) * 100).toFixed(1) : 0;
+                return `
+                    <tr>
+                        <td><strong>${r.aseguradora}</strong></td>
+                        <td><span class="pill-status pill-blue">${r.cuentasPresentadas} cuenta(s)</span></td>
+                        <td style="color:var(--accent-emerald); font-weight:700;">$${r.primaNetaTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</td>
+                        <td><strong>${pct}%</strong> del total cotizado</td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Suba cotizaciones PDF para acumular el reporte de participación por aseguradora.</td></tr>`;
+        }
+
+    } catch (err) {
+        console.error('Error cargando reporte de aseguradoras:', err);
+    }
+}
+
+function initPortfolioSearch() {
+    const input = document.getElementById('portfolioSearch');
+    input?.addEventListener('input', (e) => {
+        loadCartera(e.target.value.trim());
+    });
 }
 
 // ─── File Upload ─────────────────────────────────────────────────────────────

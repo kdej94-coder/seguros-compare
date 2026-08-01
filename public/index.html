@@ -72,9 +72,17 @@
                     <i class="fa-solid fa-layer-group"></i>
                     <span>Coberturas</span>
                 </button>
+                <button class="nav-item" data-tab="tab-deducibles">
+                    <i class="fa-solid fa-percent"></i>
+                    <span>Deducibles</span>
+                </button>
                 <button class="nav-item" data-tab="tab-sumas">
                     <i class="fa-solid fa-vault"></i>
                     <span>Sumas Aseguradas</span>
+                </button>
+                <button class="nav-item" data-tab="tab-cartera">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Cartera & Reportes</span>
                 </button>
             </nav>
 
@@ -188,6 +196,27 @@
                 </div>
             </div>
 
+            <!-- TAB: DEDUCIBLES -->
+            <div id="tab-deducibles" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-percent"></i> Matriz de Deducibles por Cobertura</h2>
+                    <p>Comparativa de deducibles cobrados por cada aseguradora y su concepto asociado.</p>
+                </div>
+                <div id="deduciblesEmpty" class="empty-state">
+                    <i class="fa-solid fa-receipt"></i>
+                    <h3>Sin datos de deducibles</h3>
+                    <p>Cargue archivos PDF de cotizaciones para comparar los deducibles de cada aseguradora.</p>
+                </div>
+                <div id="deduciblesContent" style="display:none;">
+                    <div class="table-card table-responsive">
+                        <table class="custom-table" id="tablaDeducibles">
+                            <thead id="deduciblesHead"></thead>
+                            <tbody id="deduciblesBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB: SUMAS ASEGURADAS -->
             <div id="tab-sumas" class="tab-panel">
                 <div class="panel-header">
@@ -206,6 +235,79 @@
                             <tbody id="sumasBody"></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- TAB: CARTERA & REPORTES -->
+            <div id="tab-cartera" class="tab-panel">
+                <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2><i class="fa-solid fa-chart-line"></i> Cartera de Renovaciones & Reportes de Mercado</h2>
+                        <p>Análisis de participación de aseguradoras (cuentas y prima neta presentada) y cartera a renovar.</p>
+                    </div>
+                    <span class="privacy-badge"><i class="fa-solid fa-lock"></i> Base de Datos Privada (Acceso Restringido)</span>
+                </div>
+
+                <!-- Market Summary Cards -->
+                <div class="winner-grid" style="margin-bottom: 20px;">
+                    <div class="winner-stat-card">
+                        <span class="w-label">Total Pólizas a Renovar</span>
+                        <h3 id="statTotalPolizas">923</h3>
+                        <span class="w-sub text-accent">Pólizas en Cartera 2026</span>
+                    </div>
+                    <div class="winner-stat-card">
+                        <span class="w-label">Prima Neta 2025 en Riesgo</span>
+                        <h3 id="statPrima2025">$0.00</h3>
+                        <span class="w-sub text-success">Total Prima Neta Cartera</span>
+                    </div>
+                    <div class="winner-stat-card">
+                        <span class="w-label">Cotizaciones Procesadas</span>
+                        <h3 id="statCotizacionesProcesadas">0</h3>
+                        <span class="w-sub text-accent">Propuestas de Aseguradoras</span>
+                    </div>
+                </div>
+
+                <!-- Report: Cuentas y Prima por Aseguradora -->
+                <div class="table-card table-responsive" style="margin-bottom: 24px;">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #f8fafc; font-weight:700;">
+                        <i class="fa-solid fa-building-circle-check"></i> Cuentas Presentadas y Prima Neta Acumulada por Aseguradora
+                    </div>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Aseguradora</th>
+                                <th>Cuentas / Cotizaciones Presentadas</th>
+                                <th>Prima Neta Total Presentada</th>
+                                <th>Participación (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="insurersReportBody">
+                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Cargue cotizaciones PDF para generar el reporte por aseguradora.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Base de Datos: Cartera de Renovaciones -->
+                <div class="table-card table-responsive">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display:flex; justify-content:space-between; align-items:center;">
+                        <strong><i class="fa-solid fa-list-check"></i> Base de Datos: Cartera de Pólizas a Vencer (2026)</strong>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="portfolioSearch" placeholder="Buscar por N° Póliza..." style="padding:6px 12px; border-radius:6px; border:1px solid var(--border-color); font-size:12px;">
+                        </div>
+                    </div>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>N° Póliza</th>
+                                <th>Fin Vigencia</th>
+                                <th>Mes Vigencia</th>
+                                <th>Prima Neta 2025 (MXN)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolioBody">
+                            <tr><td colspan="4" style="text-align:center;">Cargando base de datos de renovaciones...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
