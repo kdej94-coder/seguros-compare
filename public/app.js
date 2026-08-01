@@ -25,6 +25,7 @@ function initAuth() {
             loadData();
             loadCartera();
             loadInsurersReport();
+            loadHistory();
         } else {
             loginModal.style.display = 'flex';
             appMain.style.filter = 'blur(8px)';
@@ -464,6 +465,7 @@ function initUpload() {
             if (res.ok) {
                 status.innerHTML = `<span style="color:#10b981;"><i class="fa-solid fa-check"></i> ${result.mensaje}</span>`;
                 renderAll(result);
+                loadHistory();
             } else {
                 status.innerHTML = `<span style="color:#ef4444;">${result.error}</span>`;
             }
@@ -479,12 +481,15 @@ function initUpload() {
 
 function initClear() {
     document.getElementById('btnClear').addEventListener('click', async () => {
-        if (!confirm('¿Está seguro de que desea eliminar todas las propuestas cargadas?')) return;
+        if (!confirm('¿Guardar esta comparación en el historial y limpiar para una nueva?')) return;
 
         try {
-            await fetch('/api/proposals', { method: 'DELETE' });
-            document.getElementById('uploadStatus').innerHTML = '';
+            const res = await fetch('/api/proposals', { method: 'DELETE' });
+            const data = await res.json();
+            document.getElementById('uploadStatus').innerHTML = 
+                `<span style="color:#10b981;"><i class="fa-solid fa-check"></i> ${data.mensaje}</span>`;
             loadData();
+            loadHistory();
         } catch (err) {
             console.error('Error limpiando datos:', err);
         }
@@ -497,4 +502,68 @@ function initExport() {
     document.getElementById('btnExportPDF').addEventListener('click', () => {
         window.print();
     });
+}
+
+// ─── Comparison History ──────────────────────────────────────────────────────
+
+async function loadHistory() {
+    try {
+        const res = await fetch('/api/comparaciones');
+        const data = await res.json();
+        renderHistory(data.comparaciones || []);
+    } catch (err) {
+        console.error('Error cargando historial:', err);
+    }
+}
+
+function renderHistory(comparaciones) {
+    const container = document.getElementById('historyList');
+    // Filter out the _current_ entry (that's the active workspace)
+    const saved = comparaciones.filter(c => c.id !== '_current_');
+
+    if (saved.length === 0) {
+        container.innerHTML = `<p style="font-size:11px; color:var(--text-muted);">Sin comparaciones guardadas.</p>`;
+        return;
+    }
+
+    container.innerHTML = saved.map(c => {
+        const fecha = new Date(c.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return `
+            <div class="history-item" onclick="restoreComparison('${c.id}')" title="Clic para restaurar esta comparación">
+                <span class="hi-name">${c.nombre}</span>
+                <span class="hi-meta">
+                    <span>${c.totalProposals} propuesta(s) · ${c.ganador || '—'}</span>
+                    <span>${fecha}</span>
+                </span>
+                <button class="hi-delete" onclick="event.stopPropagation(); deleteComparison('${c.id}')" title="Eliminar del historial">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+async function restoreComparison(id) {
+    try {
+        const res = await fetch(`/api/comparaciones/${id}/restore`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('uploadStatus').innerHTML = 
+                `<span style="color:#10b981;"><i class="fa-solid fa-rotate-left"></i> ${data.mensaje}</span>`;
+            renderAll(data);
+        }
+    } catch (err) {
+        console.error('Error restaurando comparación:', err);
+    }
+}
+
+async function deleteComparison(id) {
+    if (!confirm('¿Eliminar esta comparación del historial permanentemente?')) return;
+    try {
+        await fetch(`/api/comparaciones/${id}`, { method: 'DELETE' });
+        loadHistory();
+        loadInsurersReport();
+    } catch (err) {
+        console.error('Error eliminando comparación:', err);
+    }
 }

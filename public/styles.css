@@ -782,6 +782,85 @@ body {
     color: var(--text-muted);
 }
 
+/* ─── History Widget ─────────────────────────────────────────────────────── */
+.history-widget {
+    margin-top: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.history-widget h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+}
+
+.history-item:hover {
+    border-color: var(--accent-indigo);
+    background: #eef2ff;
+}
+
+.history-item .hi-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-item .hi-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-item .hi-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.history-item:hover .hi-delete {
+    opacity: 1;
+    color: var(--accent-rose);
+}
+
 /* ─── Privacy Badge ──────────────────────────────────────────────────────── */
 .privacy-badge {
     display: inline-flex;

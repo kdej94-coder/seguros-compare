@@ -18,6 +18,31 @@ let proposals = [];
 // Historical proposals database for insurer analytics
 let historicalProposals = [];
 
+// Persistent comparison history database
+let comparacionesDb = [];
+const comparacionesPath = path.join(__dirname, 'data', 'comparaciones.json');
+function loadComparaciones() {
+    if (fs.existsSync(comparacionesPath)) {
+        try {
+            comparacionesDb = JSON.parse(fs.readFileSync(comparacionesPath, 'utf8'));
+            // Also rebuild historicalProposals from saved comparisons
+            historicalProposals = [];
+            for (const comp of comparacionesDb) {
+                if (comp.proposals) historicalProposals.push(...comp.proposals);
+            }
+            console.log(`[DB] Comparaciones loaded: ${comparacionesDb.length} saved comparisons, ${historicalProposals.length} historical proposals.`);
+        } catch (e) {
+            console.error('[DB] Error loading comparaciones.json:', e.message);
+        }
+    }
+}
+function saveComparaciones() {
+    const dir = path.dirname(comparacionesPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(comparacionesPath, JSON.stringify(comparacionesDb, null, 2), 'utf8');
+}
+loadComparaciones();
+
 // Load Portfolio Database (Renovaciones)
 let renovacionesDb = [];
 const renovacionesPath = path.join(__dirname, 'data', 'renovaciones.json');
@@ -377,7 +402,7 @@ app.post('/api/upload', upload.array('pdfFiles', 10), async (req, res) => {
                 console.log(`[UPLOAD] OK: ${parsed.aseguradora} | Prima: ${parsed.primaNeta} | Coberturas: ${parsed.coberturas?.filter(c=>c.amparada).length}`);
                 
                 proposals.push(parsed);
-                historicalProposals.push(parsed); // Keep historical record
+                historicalProposals.push(parsed);
 
                 newParsed.push({
                     archivo: file.originalname,
@@ -397,6 +422,11 @@ app.post('/api/upload', upload.array('pdfFiles', 10), async (req, res) => {
         }
 
         const recommendation = evaluateBestProposal(proposals);
+
+        // Auto-save current comparison to persistent history
+        if (proposals.length > 0) {
+            autoSaveCurrentComparison();
+        }
 
         res.json({
             mensaje: `${newParsed.length} archivo(s) procesado(s) correctamente.`,
@@ -473,15 +503,103 @@ app.get('/api/reports/insurers', (req, res) => {
     });
 });
 
-// Clear current session proposals
+// ─── Auto-save helper ────────────────────────────────────────────────────────
+
+function autoSaveCurrentComparison() {
+    // Check if an unsaved comparison already exists for the current set
+    const existingIdx = comparacionesDb.findIndex(c => c.id === '_current_');
+    const compData = {
+        id: '_current_',
+        nombre: generarNombreComparacion(proposals),
+        fecha: new Date().toISOString(),
+        proposals: JSON.parse(JSON.stringify(proposals)),
+        recommendation: evaluateBestProposal(proposals),
+        totalProposals: proposals.length
+    };
+    if (existingIdx >= 0) {
+        comparacionesDb[existingIdx] = compData;
+    } else {
+        comparacionesDb.push(compData);
+    }
+    saveComparaciones();
+}
+
+function generarNombreComparacion(props) {
+    const aseguradoras = [...new Set(props.map(p => p.aseguradora))];
+    const asegurado = props.find(p => p.asegurado)?.asegurado || 'Sin nombre';
+    return `${asegurado} — ${aseguradoras.join(' vs ')}`;
+}
+
+// Clear current session proposals (saves to history first)
 app.delete('/api/proposals', (req, res) => {
+    if (proposals.length > 0) {
+        // Finalize the current comparison: assign a permanent ID before clearing
+        const currentIdx = comparacionesDb.findIndex(c => c.id === '_current_');
+        if (currentIdx >= 0) {
+            comparacionesDb[currentIdx].id = 'comp-' + Date.now();
+            saveComparaciones();
+            console.log(`[HISTORY] Comparison saved as ${comparacionesDb[currentIdx].id}: ${comparacionesDb[currentIdx].nombre}`);
+        }
+    }
     proposals = [];
-    res.json({ mensaje: 'Datos eliminados. El comparativo está vacío.' });
+    res.json({ mensaje: 'Comparativo limpiado. Los datos anteriores se guardaron en el historial.' });
+});
+
+// ─── Comparison History API ──────────────────────────────────────────────────
+
+// List all saved comparisons
+app.get('/api/comparaciones', (req, res) => {
+    const list = comparacionesDb.map(c => ({
+        id: c.id,
+        nombre: c.nombre,
+        fecha: c.fecha,
+        totalProposals: c.totalProposals,
+        ganador: c.recommendation?.ganador || null
+    }));
+    // Most recent first
+    list.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    res.json({ comparaciones: list, total: list.length });
+});
+
+// Retrieve a specific saved comparison
+app.get('/api/comparaciones/:id', (req, res) => {
+    const comp = comparacionesDb.find(c => c.id === req.params.id);
+    if (!comp) return res.status(404).json({ error: 'Comparación no encontrada.' });
+    res.json(comp);
+});
+
+// Delete a specific saved comparison
+app.delete('/api/comparaciones/:id', (req, res) => {
+    const idx = comparacionesDb.findIndex(c => c.id === req.params.id);
+    if (idx < 0) return res.status(404).json({ error: 'Comparación no encontrada.' });
+    comparacionesDb.splice(idx, 1);
+    saveComparaciones();
+    // Rebuild historicalProposals
+    historicalProposals = [];
+    for (const comp of comparacionesDb) {
+        if (comp.proposals) historicalProposals.push(...comp.proposals);
+    }
+    res.json({ mensaje: 'Comparación eliminada del historial.' });
+});
+
+// Restore a saved comparison to the active workspace
+app.post('/api/comparaciones/:id/restore', (req, res) => {
+    const comp = comparacionesDb.find(c => c.id === req.params.id);
+    if (!comp) return res.status(404).json({ error: 'Comparación no encontrada.' });
+    proposals = JSON.parse(JSON.stringify(comp.proposals));
+    const recommendation = evaluateBestProposal(proposals);
+    res.json({
+        mensaje: `Comparación "${comp.nombre}" restaurada exitosamente.`,
+        proposals,
+        recommendation,
+        totalProposals: proposals.length
+    });
 });
 
 app.listen(PORT, () => {
     console.log(`===================================================`);
-    console.log(`  SegurosCompare - Dashboard con Deducibles & Renovaciones`);
+    console.log(`  SegurosCompare - Dashboard con Historial Persistente`);
     console.log(`  Corriendo en: http://localhost:${PORT}`);
+    console.log(`  Comparaciones guardadas: ${comparacionesDb.length}`);
     console.log(`===================================================`);
 });
