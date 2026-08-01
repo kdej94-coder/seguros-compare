@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initUpload();
     initClear();
     initExport();
-    initPortfolioSearch();
+    initPortfolioManagement();
 });
 
 // ─── Authentication Logic ───────────────────────────────────────────────────
@@ -432,10 +432,54 @@ async function loadInsurersReport() {
     }
 }
 
-function initPortfolioSearch() {
-    const input = document.getElementById('portfolioSearch');
-    input?.addEventListener('input', (e) => {
+function initPortfolioManagement() {
+    const inputSearch = document.getElementById('portfolioSearch');
+    inputSearch?.addEventListener('input', (e) => {
         loadCartera(e.target.value.trim());
+    });
+
+    const btnClear = document.getElementById('btnClearPortfolio');
+    btnClear?.addEventListener('click', async () => {
+        if (!confirm('¿Está seguro de que desea LIMPIAR/VACIAR la base de datos de pólizas a vencer?')) return;
+        try {
+            const res = await fetch('/api/renovaciones', { method: 'DELETE' });
+            const data = await res.json();
+            alert(data.mensaje);
+            loadCartera();
+        } catch (err) {
+            console.error('Error vaciando cartera:', err);
+            alert('Error al vaciar la base de datos.');
+        }
+    });
+
+    const btnUpload = document.getElementById('btnUploadPortfolio');
+    const fileInput = document.getElementById('portfolioFileInput');
+
+    btnUpload?.addEventListener('click', () => fileInput?.click());
+
+    fileInput?.addEventListener('change', async () => {
+        if (!fileInput.files || fileInput.files.length === 0) return;
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('portfolioFile', file);
+
+        try {
+            const res = await fetch('/api/renovaciones', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.mensaje);
+                loadCartera();
+            } else {
+                alert(data.error || 'Error subiendo la base de datos.');
+            }
+        } catch (err) {
+            console.error('Error subiendo nueva cartera:', err);
+            alert('Error al procesar el archivo.');
+        }
+        fileInput.value = '';
     });
 }
 

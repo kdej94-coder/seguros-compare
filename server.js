@@ -469,6 +469,67 @@ app.get('/api/renovaciones', (req, res) => {
     });
 });
 
+// Clear Portfolio Database
+app.delete('/api/renovaciones', (req, res) => {
+    renovacionesDb = [];
+    if (fs.existsSync(renovacionesPath)) {
+        fs.writeFileSync(renovacionesPath, JSON.stringify([], null, 2), 'utf8');
+    }
+    res.json({ mensaje: 'Base de datos de renovaciones vaciada correctamente.' });
+});
+
+// Upload/Replace Portfolio Database
+app.post('/api/renovaciones', upload.single('portfolioFile'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No se recibió ningún archivo.' });
+        }
+
+        const filePath = req.file.path;
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        let newRecords = [];
+
+        if (ext === '.json') {
+            const raw = fs.readFileSync(filePath, 'utf8');
+            newRecords = JSON.parse(raw);
+        } else if (ext === '.csv') {
+            const raw = fs.readFileSync(filePath, 'utf8');
+            const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length > 1) {
+                // assume CSV header: poliza,finVigencia,mesVigencia,primaNeta2025
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(',');
+                    if (parts.length >= 4) {
+                        newRecords.push({
+                            poliza: parts[0].trim(),
+                            finVigencia: parts[1].trim(),
+                            mesVigencia: parseInt(parts[2].trim(), 10) || 1,
+                            primaNeta2025: parseFloat(parts[3].replace(/[^0-9.]/g, '')) || 0
+                        });
+                    }
+                }
+            }
+        } else {
+            return res.status(400).json({ error: 'Formato no soportado. Debe ser JSON o CSV.' });
+        }
+
+        if (!Array.isArray(newRecords)) {
+            return res.status(400).json({ error: 'El contenido del archivo debe ser un arreglo de registros.' });
+        }
+
+        renovacionesDb = newRecords;
+        fs.writeFileSync(renovacionesPath, JSON.stringify(renovacionesDb, null, 2), 'utf8');
+
+        res.json({
+            mensaje: `Base de datos cargada exitosamente con ${renovacionesDb.length} registros.`,
+            totalRegistros: renovacionesDb.length
+        });
+    } catch (err) {
+        console.error('Error al actualizar base de datos de cartera:', err);
+        res.status(500).json({ error: 'Error al procesar archivo de base de datos: ' + err.message });
+    }
+});
+
 // Insurers Market Performance Report (Cuentas presentadas y Prima Neta acumulada)
 app.get('/api/reports/insurers', (req, res) => {
     const map = {};

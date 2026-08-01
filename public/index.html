@@ -297,10 +297,17 @@
 
                 <!-- Base de Datos: Cartera de Renovaciones -->
                 <div class="table-card table-responsive">
-                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                         <strong><i class="fa-solid fa-list-check"></i> Base de Datos: Cartera de Pólizas a Vencer (2026)</strong>
-                        <div style="display:flex; gap:10px;">
+                        <div style="display:flex; gap:10px; align-items:center;">
                             <input type="text" id="portfolioSearch" placeholder="Buscar por N° Póliza..." style="padding:6px 12px; border-radius:6px; border:1px solid var(--border-color); font-size:12px;">
+                            <input type="file" id="portfolioFileInput" accept=".json,.csv" style="display:none;">
+                            <button id="btnUploadPortfolio" class="btn" style="background:#1e40af; color:#fff; padding:6px 12px; font-size:12px; border-radius:6px; border:none; cursor:pointer;" title="Subir archivo JSON o CSV con nueva base de datos">
+                                <i class="fa-solid fa-file-circle-plus"></i> Nueva Base de Datos
+                            </button>
+                            <button id="btnClearPortfolio" class="btn" style="background:#dc2626; color:#fff; padding:6px 12px; font-size:12px; border-radius:6px; border:none; cursor:pointer;" title="Vaciar la base de datos de pólizas">
+                                <i class="fa-solid fa-trash"></i> Limpiar BD
+                            </button>
                         </div>
                     </div>
                     <table class="custom-table">
