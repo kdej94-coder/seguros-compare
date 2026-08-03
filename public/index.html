@@ -116,6 +116,16 @@
                     <h1>Estudio Comparativo de Cotizaciones</h1>
                 </div>
                 <div class="header-actions">
+                    <!-- Exchange Rate Widget -->
+                    <div class="exchange-rate-box" title="Tipo de cambio USD a MXN (editable)">
+                        <i class="fa-solid fa-dollar-sign text-emerald"></i>
+                        <span class="tc-label">TC USD/MXN:</span>
+                        <input type="number" id="exchangeRateInput" step="0.01" value="20.00" style="width:72px; padding:4px 6px; border-radius:6px; border:1px solid var(--border-color); font-weight:700; font-size:12px; color:var(--text-primary); text-align:center; background:#fff;">
+                        <button id="btnFetchRate" class="btn-icon" style="background:none; border:none; color:var(--accent-indigo); cursor:pointer; font-size:13px; padding:2px 4px;" title="Obtener tipo de cambio en vivo">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+
                     <button class="btn btn-outline" id="btnExportPDF">
                         <i class="fa-solid fa-print"></i> Exportar
                     </button>

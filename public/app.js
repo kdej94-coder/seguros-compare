@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     initAuth();
+    initExchangeRate();
     initTabs();
     initUpload();
     initClear();
@@ -7,6 +8,84 @@ document.addEventListener('DOMContentLoaded', () => {
     initPortfolioManagement();
     initPolizaModal();
 });
+
+// ─── Exchange Rate (USD / MXN) ───────────────────────────────────────────────
+
+let currentExchangeRate = 20.00;
+
+function initExchangeRate() {
+    const input = document.getElementById('exchangeRateInput');
+    const btnFetch = document.getElementById('btnFetchRate');
+
+    if (!input) return;
+
+    // Restore saved rate or fetch live rate automatically
+    const savedRate = localStorage.getItem('seguros_tc_usd');
+    if (savedRate && !isNaN(parseFloat(savedRate))) {
+        currentExchangeRate = parseFloat(savedRate);
+        input.value = currentExchangeRate.toFixed(2);
+    } else {
+        fetchLiveExchangeRate();
+    }
+
+    input.addEventListener('change', () => {
+        const val = parseFloat(input.value);
+        if (!isNaN(val) && val > 0) {
+            currentExchangeRate = val;
+            localStorage.setItem('seguros_tc_usd', val.toString());
+            refreshAllViews();
+        }
+    });
+
+    btnFetch?.addEventListener('click', () => {
+        fetchLiveExchangeRate(true);
+    });
+}
+
+async function fetchLiveExchangeRate(userTriggered = false) {
+    const input = document.getElementById('exchangeRateInput');
+    const btnFetch = document.getElementById('btnFetchRate');
+    if (btnFetch) btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates && data.rates.MXN) {
+            const liveRate = Math.round(data.rates.MXN * 100) / 100;
+            currentExchangeRate = liveRate;
+            if (input) input.value = liveRate.toFixed(2);
+            localStorage.setItem('seguros_tc_usd', liveRate.toString());
+            if (userTriggered) alert(`Tipo de cambio en vivo obtenido: $${liveRate.toFixed(2)} MXN / USD`);
+            refreshAllViews();
+        }
+    } catch (err) {
+        console.warn('No se pudo obtener TC en vivo:', err.message);
+    } finally {
+        if (btnFetch) btnFetch.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+    }
+}
+
+function refreshAllViews() {
+    loadData();
+    loadInsurersReport();
+    loadCartera();
+}
+
+function formatPrimaWithEquiv(prima, moneda = 'MXN', rate = currentExchangeRate) {
+    if (!prima || isNaN(prima)) return 'No detectada';
+
+    const formatted = '$' + Number(prima).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    if (moneda === 'USD') {
+        const mxnEquiv = prima * rate;
+        const formattedMXN = '$' + Number(mxnEquiv).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return `<strong>${formatted} USD</strong> <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(≈ ${formattedMXN} MXN @ TC $${rate.toFixed(2)})</span>`;
+    } else {
+        const usdEquiv = prima / rate;
+        const formattedUSD = '$' + Number(usdEquiv).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return `<strong>${formatted} MXN</strong> <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(≈ ${formattedUSD} USD @ TC $${rate.toFixed(2)})</span>`;
+    }
+}
 
 // ─── Authentication Logic ───────────────────────────────────────────────────
 
@@ -153,13 +232,13 @@ function renderRecommendation(rec, hasData) {
             <div class="winner-grid">
                 <div class="winner-stat-card">
                     <span class="w-label">Prima Neta</span>
-                    <h3>${rec.ganadorData.primaNeta ? '$' + rec.ganadorData.primaNeta.toLocaleString() + ' ' + rec.ganadorData.moneda : 'N/D'}</h3>
+                    <h3>${formatPrimaWithEquiv(rec.ganadorData.primaNeta, rec.ganadorData.moneda)}</h3>
                     <span class="w-sub text-success">Cotización más competitiva</span>
                 </div>
                 ${ahorroVsSegundo > 0 ? `
                 <div class="winner-stat-card">
                     <span class="w-label">Ahorro vs ${rec.segundoLugar.aseguradora}</span>
-                    <h3>$${ahorroVsSegundo.toLocaleString()} ${rec.ganadorData.moneda}</h3>
+                    <h3>${formatPrimaWithEquiv(ahorroVsSegundo, rec.ganadorData.moneda)}</h3>
                     <span class="w-sub text-success">Diferencia directa</span>
                 </div>` : ''}
                 <div class="winner-stat-card">
@@ -203,16 +282,16 @@ function renderResumen(proposals, hasData) {
                 <span class="value">${p.archivo ? p.archivo.substring(0, 30) : '—'}</span>
             </div>
             <div class="proposal-detail">
-                <span class="label">Moneda</span>
+                <span class="label">Moneda Original</span>
                 <span class="value">${p.moneda || '—'}</span>
             </div>
             <div class="proposal-detail">
                 <span class="label">Prima Neta</span>
-                <span class="value" style="color: var(--accent-emerald);">${p.primaNeta ? '$' + p.primaNeta.toLocaleString() : 'No detectada'}</span>
+                <span class="value" style="color: var(--accent-emerald);">${formatPrimaWithEquiv(p.primaNeta, p.moneda)}</span>
             </div>
             <div class="proposal-detail">
                 <span class="label">Prima Total</span>
-                <span class="value">${p.primaTotal ? '$' + p.primaTotal.toLocaleString() : '—'}</span>
+                <span class="value">${formatPrimaWithEquiv(p.primaTotal, p.moneda)}</span>
             </div>
             <div class="proposal-detail">
                 <span class="label">Coberturas</span>
@@ -436,21 +515,40 @@ async function loadInsurersReport() {
 
         const tbody = document.getElementById('insurersReportBody');
         if (data.report && data.report.length > 0) {
+            // Calculate total MXN equivalent across all insurers for exact market share %
+            let grandTotalMXNEquiv = 0;
+            data.report.forEach(r => {
+                r.totalMXNEquiv = (r.cotizaciones || []).reduce((acc, c) => {
+                    const rate = c.moneda === 'USD' ? currentExchangeRate : 1;
+                    return acc + ((c.primaNeta || 0) * rate);
+                }, 0);
+                grandTotalMXNEquiv += r.totalMXNEquiv;
+            });
+
             tbody.innerHTML = data.report.map((r, idx) => {
-                const pct = data.totalPrimaGeneral > 0 ? ((r.primaNetaTotal / data.totalPrimaGeneral) * 100).toFixed(1) : 0;
+                const pct = grandTotalMXNEquiv > 0 ? ((r.totalMXNEquiv / grandTotalMXNEquiv) * 100).toFixed(1) : 0;
                 const detailId = `insurer-detail-${idx}`;
 
-                // Build detail sub-table rows
+                // Build detail sub-table rows with dual currency equivalents
                 const detailRows = r.cotizaciones.map((c, ci) => {
                     const fecha = c.fecha ? new Date(c.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
                     const escapedArchivo = (c.archivo || '').replace(/'/g, "\\'");
                     const itemId = c.id || '';
+                    let primaDetailText = '';
+                    if (c.moneda === 'USD') {
+                        const equiv = (c.primaNeta || 0) * currentExchangeRate;
+                        primaDetailText = `$${(c.primaNeta || 0).toLocaleString('es-MX', {minimumFractionDigits:2})} USD<br><span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(≈ $${equiv.toLocaleString('es-MX', {minimumFractionDigits:2})} MXN)</span>`;
+                    } else {
+                        const equivUSD = currentExchangeRate > 0 ? (c.primaNeta || 0) / currentExchangeRate : 0;
+                        primaDetailText = `$${(c.primaNeta || 0).toLocaleString('es-MX', {minimumFractionDigits:2})} MXN<br><span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(≈ $${equivUSD.toLocaleString('es-MX', {minimumFractionDigits:2})} USD)</span>`;
+                    }
+
                     return `
                         <tr style="background:#f8fafc;">
                             <td style="padding-left:30px; font-size:11px;">${ci + 1}.</td>
                             <td style="font-size:11px;" title="${c.archivo}">${c.archivo ? c.archivo.substring(0, 40) : '—'}</td>
                             <td style="font-size:11px;">${c.asegurado ? c.asegurado.substring(0, 35) : '—'}</td>
-                            <td style="font-size:11px; font-weight:600; color:var(--accent-indigo);">$${c.primaNeta ? c.primaNeta.toLocaleString('es-MX', {minimumFractionDigits:2}) : '0.00'} ${c.moneda || 'MXN'}</td>
+                            <td style="font-size:11px; font-weight:600; color:var(--accent-indigo);">${primaDetailText}</td>
                             <td style="font-size:11px;">${c.coberturas || 0} detectadas</td>
                             <td style="font-size:11px; color:var(--text-muted);">${fecha}</td>
                             <td style="font-size:11px; text-align:center;">
@@ -464,11 +562,15 @@ async function loadInsurersReport() {
                 // Format primas por moneda
                 let primaFormatted = '';
                 if (r.primasPorMoneda && Object.keys(r.primasPorMoneda).length > 0) {
-                    primaFormatted = Object.entries(r.primasPorMoneda)
-                        .map(([m, val]) => `$${val.toLocaleString('es-MX', { minimumFractionDigits: 2 })} ${m}`)
-                        .join(' / ');
+                    const rawParts = Object.entries(r.primasPorMoneda)
+                        .map(([m, val]) => `$${val.toLocaleString('es-MX', { minimumFractionDigits: 2 })} ${m}`);
+                    if (r.primasPorMoneda.USD && !r.primasPorMoneda.MXN) {
+                        primaFormatted = `${rawParts.join(' / ')} <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(≈ $${r.totalMXNEquiv.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN)</span>`;
+                    } else {
+                        primaFormatted = `${rawParts.join(' / ')} <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(Total ≈ $${r.totalMXNEquiv.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN)</span>`;
+                    }
                 } else {
-                    primaFormatted = `$${r.primaNetaTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
+                    primaFormatted = `$${r.totalMXNEquiv.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
                 }
 
                 return `
@@ -956,7 +1058,8 @@ function generateExecutiveReport(data) {
             <p>El mercado asegurador para giros comerciales e inmobiliarios ha mostrado un ajuste generalizado en tarifas. Se realizó la solicitud formal de cotización a las principales instituciones del mercado mexicano. El estatus final de las respuestas se detalla a continuación:</p>
             <ul>
                 <li><strong>Ofertas Firmes Presentadas (${proposals.length}):</strong> ${proposals.map(p => p.aseguradora).join(', ')}.</li>
-                <li><strong>Moneda de Cotización:</strong> ${moneda}.</li>
+                <li><strong>Monedas de Cotización:</strong> ${[...new Set(proposals.map(p => p.moneda || 'MXN'))].join(', ')}.</li>
+                <li><strong>Tipo de Cambio de Referencia:</strong> $${currentExchangeRate.toFixed(2)} MXN / USD.</li>
                 <li><strong>Ubicación del Riesgo:</strong> ${domicilio || 'Ver póliza original.'}.</li>
                 <li><strong>Giro / Actividad:</strong> ${giro}.</li>
             </ul>
@@ -988,8 +1091,8 @@ function generateExecutiveReport(data) {
         <table class="comp-table">
             <thead>
                 <tr>
-                    <th>Concepto (${moneda})</th>
-                    ${proposals.map(p => `<th>${p.aseguradora}<br><span style="font-weight:400; font-size:9px;">Propuesta Renovación</span></th>`).join('')}
+                    <th>Concepto</th>
+                    ${proposals.map(p => `<th>${p.aseguradora}<br><span style="font-weight:400; font-size:9px;">Propuesta (${p.moneda || 'MXN'})</span></th>`).join('')}
                 </tr>
             </thead>
             <tbody>
@@ -997,7 +1100,14 @@ function generateExecutiveReport(data) {
                     <td>Prima Neta</td>
                     ${proposals.map(p => {
                         const isWin = p.aseguradora === winner;
-                        return `<td class="${isWin ? 'text-winner' : ''}" style="font-weight:700;">${fmt(p.primaNeta)}</td>`;
+                        if (!p.primaNeta) return '<td>—</td>';
+                        let valStr = fmt(p.primaNeta);
+                        if (p.moneda === 'USD') {
+                            valStr = `${fmt(p.primaNeta)} USD<span class="sub-label">(≈ ${fmt(p.primaNeta * currentExchangeRate)} MXN)</span>`;
+                        } else {
+                            valStr = `${fmt(p.primaNeta)} MXN`;
+                        }
+                        return `<td class="${isWin ? 'text-winner' : ''}" style="font-weight:700;">${valStr}</td>`;
                     }).join('')}
                 </tr>
                 <tr>
