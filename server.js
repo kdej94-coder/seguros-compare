@@ -206,15 +206,28 @@ function extractActivity(text) {
 
 function extractPrimaNeta(text) {
     const patterns = [
-        /Prima\s+Neta\s*\$?\s*([\d,]+(?:\.\d+)?)/i,
-        /PRIMA\s+NETA[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
-        /PRIMA\s+TOTAL\s+NETA[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i
+        // 1. Explicit Prima Neta / Prima Total Neta
+        /(?:Prima\s+Neta|PRIMA\s+NETA|PRIMA\s+TOTAL\s+NETA)\s*(?:\([^\)]+\)|[¹²*])?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
+
+        // 2. Prima with footnote or currency specifier e.g., "Prima¹ (USD)" or "Prima (USD)" or "Prima (MXN)"
+        /Prima[¹²*\s]*(?:\(USD\)|\(MXN\)|\(PESOS\))?[:\s]*\$?\s*([\d,]{3,}(?:\.\d+)?)/i,
+
+        // 3. Table format: "Prima" header followed within ~150 characters by dollar amount $X,XXX
+        /Prima[¹²*\s]*(?:\([^\)]+\))?[\s\S]{0,150}?\$\s*([\d,]+(?:\.\d+)?)/i,
+
+        // 4. Prima Anual / Prima Cotizada / Prima Comercial / Prima Deposit
+        /(?:Prima\s+(?:Anual|Cotizada|Comercial|[UÚ]nica|Deposit|por\s+Reclamaci[oó]n))\s*(?:\([^\)]+\)|[¹²*])?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
+
+        // 5. Generic Prima label followed by dollar amount
+        /Prima[:\s]+[^\d\n]*\$?\s*([\d,]+(?:\.\d+)?)/i
     ];
+
     for (const p of patterns) {
         const m = text.match(p);
         if (m) {
             const val = extractNumber(m[1]);
-            if (val && val > 100 && val < 100000000) return val;
+            // Ensure reasonable insurance premium range ($100 to $100,000,000)
+            if (val && val >= 100 && val < 100000000) return val;
         }
     }
     return null;
@@ -222,14 +235,14 @@ function extractPrimaNeta(text) {
 
 function extractPrimaTotal(text) {
     const patterns = [
-        /Prima\s+Total\s*\$?\s*([\d,]+(?:\.\d+)?)/i,
-        /PRIMA\s+TOTAL[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i
+        /(?:Prima\s+Total|PRIMA\s+TOTAL|TOTAL\s+A\s+PAGAR|IMPORTE\s+TOTAL)\s*(?:\([^\)]+\)|[¹²*])?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
+        /Total[:\s]+\$?\s*([\d,]+(?:\.\d+)?)/i
     ];
     for (const p of patterns) {
         const m = text.match(p);
         if (m) {
             const val = extractNumber(m[1]);
-            if (val && val > 100 && val < 200000000) return val;
+            if (val && val >= 100 && val < 200000000) return val;
         }
     }
     return null;
@@ -353,14 +366,21 @@ function extractCoberturas(text) {
 
 function parsePDFData(text, filename) {
     const aseguradora = identifyInsurer(text, filename);
+    let primaNeta = extractPrimaNeta(text);
+    let primaTotal = extractPrimaTotal(text);
+
+    // Fallback logic
+    if (!primaNeta && primaTotal) primaNeta = primaTotal;
+    if (!primaTotal && primaNeta) primaTotal = primaNeta;
+
     return {
         aseguradora,
         moneda: extractCurrency(text),
         asegurado: extractInsuredName(text),
         domicilio: extractAddress(text),
         giro: extractActivity(text),
-        primaNeta: extractPrimaNeta(text),
-        primaTotal: extractPrimaTotal(text),
+        primaNeta,
+        primaTotal,
         sumasAseguradas: extractSumasAseguradas(text),
         coberturas: extractCoberturas(text),
         deducibles: extractDeducibles(text, aseguradora),
