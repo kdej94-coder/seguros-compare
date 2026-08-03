@@ -412,14 +412,58 @@ async function loadInsurersReport() {
 
         const tbody = document.getElementById('insurersReportBody');
         if (data.report && data.report.length > 0) {
-            tbody.innerHTML = data.report.map(r => {
+            tbody.innerHTML = data.report.map((r, idx) => {
                 const pct = data.totalPrimaGeneral > 0 ? ((r.primaNetaTotal / data.totalPrimaGeneral) * 100).toFixed(1) : 0;
+                const detailId = `insurer-detail-${idx}`;
+
+                // Build detail sub-table rows
+                const detailRows = r.cotizaciones.map((c, ci) => {
+                    const fecha = c.fecha ? new Date(c.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                    return `
+                        <tr style="background:#f8fafc;">
+                            <td style="padding-left:30px; font-size:11px;">${ci + 1}.</td>
+                            <td style="font-size:11px;" title="${c.archivo}">${c.archivo ? c.archivo.substring(0, 40) : '—'}</td>
+                            <td style="font-size:11px;">${c.asegurado ? c.asegurado.substring(0, 35) : '—'}</td>
+                            <td style="font-size:11px; font-weight:600; color:var(--accent-indigo);">$${c.primaNeta ? c.primaNeta.toLocaleString('es-MX', {minimumFractionDigits:2}) : '0.00'} ${c.moneda || 'MXN'}</td>
+                            <td style="font-size:11px;">${c.coberturas || 0} detectadas</td>
+                            <td style="font-size:11px; color:var(--text-muted);">${fecha}</td>
+                        </tr>`;
+                }).join('');
+
                 return `
-                    <tr>
-                        <td><strong>${r.aseguradora}</strong></td>
+                    <tr style="cursor:pointer;" onclick="toggleInsurerDetail('${detailId}')" title="Clic para ver detalle de cotizaciones">
+                        <td>
+                            <strong>${r.aseguradora}</strong>
+                            <i class="fa-solid fa-chevron-down" id="${detailId}-icon" style="margin-left:6px; font-size:10px; color:var(--text-muted); transition:transform 0.2s;"></i>
+                        </td>
                         <td><span class="pill-status pill-blue">${r.cuentasPresentadas} cuenta(s)</span></td>
                         <td style="color:var(--accent-emerald); font-weight:700;">$${r.primaNetaTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</td>
                         <td><strong>${pct}%</strong> del total cotizado</td>
+                    </tr>
+                    <tr id="${detailId}" style="display:none;">
+                        <td colspan="4" style="padding:0; background:#f1f5f9;">
+                            <div style="padding:12px 16px;">
+                                <div style="font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">
+                                    <i class="fa-solid fa-folder-open" style="margin-right:4px;"></i>
+                                    Cotizaciones presentadas por ${r.aseguradora} (${r.cuentasPresentadas}):
+                                </div>
+                                <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                                    <thead>
+                                        <tr style="background:#e2e8f0;">
+                                            <th style="padding:6px 8px; text-align:left; font-size:10px; width:30px;">#</th>
+                                            <th style="padding:6px 8px; text-align:left; font-size:10px;">Archivo PDF</th>
+                                            <th style="padding:6px 8px; text-align:left; font-size:10px;">Cliente / Asegurado</th>
+                                            <th style="padding:6px 8px; text-align:left; font-size:10px;">Prima Neta</th>
+                                            <th style="padding:6px 8px; text-align:left; font-size:10px;">Coberturas</th>
+                                            <th style="padding:6px 8px; text-align:left; font-size:10px;">Fecha Procesado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${detailRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
                     </tr>
                 `;
             }).join('');
@@ -429,6 +473,20 @@ async function loadInsurersReport() {
 
     } catch (err) {
         console.error('Error cargando reporte de aseguradoras:', err);
+    }
+}
+
+function toggleInsurerDetail(detailId) {
+    const row = document.getElementById(detailId);
+    const icon = document.getElementById(detailId + '-icon');
+    if (!row) return;
+
+    if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+        row.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
     }
 }
 

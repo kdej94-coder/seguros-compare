@@ -549,6 +549,10 @@ app.get('/api/reports/insurers', (req, res) => {
         map[name].cotizaciones.push({
             archivo: p.archivo,
             primaNeta: p.primaNeta,
+            primaTotal: p.primaTotal || 0,
+            moneda: p.moneda || 'MXN',
+            asegurado: p.asegurado || '—',
+            coberturas: p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0,
             fecha: p.fechaProcesado
         });
     }
