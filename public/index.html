@@ -317,15 +317,55 @@
                                 <th>Fin Vigencia</th>
                                 <th>Mes Vigencia</th>
                                 <th>Prima Neta 2025 (MXN)</th>
+                                <th style="text-align:center;">Renovación</th>
                             </tr>
                         </thead>
                         <tbody id="portfolioBody">
-                            <tr><td colspan="4" style="text-align:center;">Cargando base de datos de renovaciones...</td></tr>
+                            <tr><td colspan="5" style="text-align:center;">Cargando base de datos de renovaciones...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal: Cotizar Renovación de Póliza -->
+    <div id="polizaModal" class="poliza-modal-overlay" style="display:none;">
+        <div class="poliza-modal">
+            <div class="poliza-modal-header">
+                <h3><i class="fa-solid fa-file-signature"></i> Cotización para Renovación</h3>
+                <button onclick="closePolizaModal()" class="poliza-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="poliza-modal-body">
+                <div class="poliza-modal-info">
+                    <div class="pmi-row">
+                        <span class="pmi-label">N° Póliza:</span>
+                        <span class="pmi-value" id="modalPoliza">—</span>
+                    </div>
+                    <div class="pmi-row">
+                        <span class="pmi-label">Vencimiento:</span>
+                        <span class="pmi-value" id="modalVencimiento">—</span>
+                    </div>
+                    <div class="pmi-row">
+                        <span class="pmi-label">Prima Neta 2025:</span>
+                        <span class="pmi-value" id="modalPrima" style="color:var(--accent-indigo); font-weight:700;">—</span>
+                    </div>
+                </div>
+
+                <div class="poliza-modal-upload">
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Suba los PDFs de las cotizaciones de las aseguradoras para esta póliza:</p>
+                    <input type="file" id="polizaPdfInput" multiple accept=".pdf" style="display:none;">
+                    <button class="btn btn-upload" id="btnPolizaUpload" style="width:100%;">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Subir Cotizaciones para esta Póliza
+                    </button>
+                    <div id="polizaUploadStatus" class="upload-status" style="margin-top:8px;"></div>
+                </div>
+
+                <div id="polizaCotizaciones" style="margin-top:16px;">
+                    <!-- Linked quotations will render here -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>

@@ -523,8 +523,84 @@ app.get('/api/renovaciones', (req, res) => {
     res.json({
         totalPolizas: filtered.length,
         totalPrima2025,
-        polizas: filtered.slice(0, 100), // Return top 100 for fast UI rendering
+        polizas: filtered.slice(0, 100),
         totalRegistros: renovacionesDb.length
+    });
+});
+
+// Upload cotizaciones linked to a specific policy
+app.post('/api/renovaciones/:poliza/cotizaciones', upload.array('pdfFiles', 10), async (req, res) => {
+    try {
+        const polizaId = decodeURIComponent(req.params.poliza);
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No se subió ningún archivo PDF.' });
+        }
+
+        const parsedProposals = [];
+        for (const file of req.files) {
+            console.log(`[POLIZA-UPLOAD] Processing for ${polizaId}: ${file.originalname}`);
+            try {
+                const text = await extractTextFromPDF(file.path);
+                const parsed = parsePDFData(text, file.originalname);
+                parsed.polizaVinculada = polizaId;
+                console.log(`[POLIZA-UPLOAD] OK: ${parsed.aseguradora} | Prima: ${parsed.primaNeta}`);
+                historicalProposals.push(parsed);
+                parsedProposals.push(parsed);
+            } catch (err) {
+                console.error(`[POLIZA-UPLOAD] ERROR: ${file.originalname}:`, err.message);
+            }
+        }
+
+        // Save as a comparison linked to this policy
+        if (parsedProposals.length > 0) {
+            const existingIdx = comparacionesDb.findIndex(c => c.polizaVinculada === polizaId);
+            const compData = {
+                id: 'poliza-' + Date.now(),
+                nombre: `Renovación ${polizaId} — ${[...new Set(parsedProposals.map(p => p.aseguradora))].join(' vs ')}`,
+                fecha: new Date().toISOString(),
+                polizaVinculada: polizaId,
+                proposals: existingIdx >= 0
+                    ? [...comparacionesDb[existingIdx].proposals, ...JSON.parse(JSON.stringify(parsedProposals))]
+                    : JSON.parse(JSON.stringify(parsedProposals)),
+                recommendation: null,
+                totalProposals: 0
+            };
+            compData.totalProposals = compData.proposals.length;
+            compData.recommendation = evaluateBestProposal(compData.proposals);
+
+            if (existingIdx >= 0) {
+                compData.id = comparacionesDb[existingIdx].id;
+                comparacionesDb[existingIdx] = compData;
+            } else {
+                comparacionesDb.push(compData);
+            }
+            saveComparaciones();
+        }
+
+        res.json({
+            mensaje: `${parsedProposals.length} cotización(es) vinculadas a la póliza ${polizaId}.`,
+            proposals: parsedProposals,
+            totalLinked: parsedProposals.length
+        });
+    } catch (err) {
+        console.error('Error subiendo cotizaciones vinculadas:', err);
+        res.status(500).json({ error: 'Error procesando: ' + err.message });
+    }
+});
+
+// Get cotizaciones linked to a specific policy
+app.get('/api/renovaciones/:poliza/cotizaciones', (req, res) => {
+    const polizaId = decodeURIComponent(req.params.poliza);
+    const linked = comparacionesDb.find(c => c.polizaVinculada === polizaId);
+    if (!linked || !linked.proposals || linked.proposals.length === 0) {
+        return res.json({ poliza: polizaId, proposals: [], recommendation: null });
+    }
+    res.json({
+        poliza: polizaId,
+        proposals: linked.proposals,
+        recommendation: linked.recommendation,
+        totalProposals: linked.totalProposals,
+        fecha: linked.fecha
     });
 });
 

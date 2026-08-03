@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initClear();
     initExport();
     initPortfolioManagement();
+    initPolizaModal();
 });
 
 // ─── Authentication Logic ───────────────────────────────────────────────────
@@ -384,18 +385,41 @@ async function loadCartera(query = '') {
         document.getElementById('statTotalPolizas').textContent = data.totalRegistros.toLocaleString();
         document.getElementById('statPrima2025').textContent = '$' + data.totalPrima2025.toLocaleString('es-MX', { minimumFractionDigits: 2 });
 
+        // Check which policies have linked quotations
+        let linkedPolizas = {};
+        try {
+            const compRes = await fetch('/api/comparaciones');
+            const compData = await compRes.json();
+            for (const c of (compData.comparaciones || [])) {
+                if (c.id && c.id.startsWith('poliza-')) {
+                    // Extract poliza from nombre
+                    const match = c.nombre?.match(/Renovaci\u00f3n (.+?) \u2014/);
+                    if (match) linkedPolizas[match[1]] = c.totalProposals;
+                }
+            }
+        } catch(e) {}
+
         const tbody = document.getElementById('portfolioBody');
         if (data.polizas && data.polizas.length > 0) {
-            tbody.innerHTML = data.polizas.map(p => `
+            tbody.innerHTML = data.polizas.map(p => {
+                const hasLinked = linkedPolizas[p.poliza];
+                const escapedPoliza = p.poliza.replace(/'/g, "\\'");
+                return `
                 <tr>
                     <td><strong>${p.poliza}</strong></td>
                     <td>${p.finVigencia}</td>
                     <td>Mes ${p.mesVigencia} (${p.nombreMes})</td>
                     <td style="color:var(--accent-indigo); font-weight:600;">$${p.primaNeta2025 ? p.primaNeta2025.toLocaleString('es-MX', { minimumFractionDigits: 2 }) : '0.00'}</td>
-                </tr>
-            `).join('');
+                    <td style="text-align:center;">
+                        ${hasLinked
+                            ? `<span class="pill-linked" onclick="openPolizaModal('${escapedPoliza}', '${p.finVigencia}', ${p.primaNeta2025 || 0})">${hasLinked} cotiz.</span>`
+                            : `<button class="btn-cotizar" onclick="openPolizaModal('${escapedPoliza}', '${p.finVigencia}', ${p.primaNeta2025 || 0})"><i class="fa-solid fa-file-circle-plus"></i> Cotizar</button>`
+                        }
+                    </td>
+                </tr>`;
+            }).join('');
         } else {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No se encontraron pólizas.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No se encontraron pólizas.</td></tr>`;
         }
 
     } catch (err) {
@@ -1166,5 +1190,117 @@ async function deleteComparison(id) {
         loadInsurersReport();
     } catch (err) {
         console.error('Error eliminando comparación:', err);
+    }
+}
+
+// ─── Poliza Modal (Linked Quotations) ────────────────────────────────────────
+
+let currentModalPoliza = null;
+
+function initPolizaModal() {
+    const btnUpload = document.getElementById('btnPolizaUpload');
+    const fileInput = document.getElementById('polizaPdfInput');
+
+    btnUpload?.addEventListener('click', () => fileInput?.click());
+
+    fileInput?.addEventListener('change', async () => {
+        if (!fileInput.files || fileInput.files.length === 0 || !currentModalPoliza) return;
+
+        const formData = new FormData();
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('pdfFiles', fileInput.files[i]);
+        }
+
+        const status = document.getElementById('polizaUploadStatus');
+        status.innerHTML = `<span style="color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Procesando ${fileInput.files.length} archivo(s)...</span>`;
+
+        try {
+            const res = await fetch(`/api/renovaciones/${encodeURIComponent(currentModalPoliza)}/cotizaciones`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok) {
+                status.innerHTML = `<span style="color:#10b981;"><i class="fa-solid fa-check"></i> ${data.mensaje}</span>`;
+                loadPolizaCotizaciones(currentModalPoliza);
+                loadInsurersReport();
+                loadCartera();
+            } else {
+                status.innerHTML = `<span style="color:#ef4444;">${data.error}</span>`;
+            }
+        } catch (err) {
+            status.innerHTML = `<span style="color:#ef4444;">Error al subir archivos</span>`;
+        }
+        fileInput.value = '';
+    });
+
+    // Close modal on overlay click
+    document.getElementById('polizaModal')?.addEventListener('click', (e) => {
+        if (e.target.classList.contains('poliza-modal-overlay')) closePolizaModal();
+    });
+}
+
+function openPolizaModal(poliza, vencimiento, prima) {
+    currentModalPoliza = poliza;
+    document.getElementById('modalPoliza').textContent = poliza;
+    document.getElementById('modalVencimiento').textContent = vencimiento;
+    document.getElementById('modalPrima').textContent = '$' + Number(prima).toLocaleString('es-MX', { minimumFractionDigits: 2 }) + ' MXN';
+    document.getElementById('polizaUploadStatus').innerHTML = '';
+    document.getElementById('polizaModal').style.display = 'flex';
+    loadPolizaCotizaciones(poliza);
+}
+
+function closePolizaModal() {
+    document.getElementById('polizaModal').style.display = 'none';
+    currentModalPoliza = null;
+}
+
+async function loadPolizaCotizaciones(poliza) {
+    const container = document.getElementById('polizaCotizaciones');
+    try {
+        const res = await fetch(`/api/renovaciones/${encodeURIComponent(poliza)}/cotizaciones`);
+        const data = await res.json();
+
+        if (!data.proposals || data.proposals.length === 0) {
+            container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Aún no se han vinculado cotizaciones a esta póliza.</p>`;
+            return;
+        }
+
+        const winner = data.recommendation?.ganador || '—';
+
+        container.innerHTML = `
+            <div style="font-size:12px; font-weight:700; margin-bottom:10px; color:var(--text-primary);">
+                <i class="fa-solid fa-file-lines"></i> Cotizaciones vinculadas (${data.proposals.length}):
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                <thead>
+                    <tr style="background:#e2e8f0;">
+                        <th style="padding:6px 8px; text-align:left;">Aseguradora</th>
+                        <th style="padding:6px 8px; text-align:left;">Archivo PDF</th>
+                        <th style="padding:6px 8px; text-align:left;">Prima Neta</th>
+                        <th style="padding:6px 8px; text-align:left;">Coberturas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.proposals.map(p => {
+                        const isWinner = p.aseguradora === winner;
+                        const covCount = p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0;
+                        return `
+                        <tr style="${isWinner ? 'background:#e8edf5;' : ''}">
+                            <td style="padding:6px 8px; font-weight:${isWinner ? '700' : '500'};">${p.aseguradora}${isWinner ? ' <span style="color:var(--accent-indigo); font-size:10px;">(Mejor)</span>' : ''}</td>
+                            <td style="padding:6px 8px; font-size:10px;" title="${p.archivo}">${p.archivo ? p.archivo.substring(0, 30) : '—'}</td>
+                            <td style="padding:6px 8px; font-weight:600; color:var(--accent-indigo);">$${p.primaNeta ? p.primaNeta.toLocaleString('es-MX', {minimumFractionDigits:2}) : '0.00'}</td>
+                            <td style="padding:6px 8px;">${covCount} detectadas</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+            ${data.recommendation ? `
+            <div style="margin-top:12px; background:#f1f5f9; border-radius:6px; padding:10px 14px; font-size:11px;">
+                <strong>Recomendación:</strong> ${data.recommendation.ganador} presenta la mejor propuesta para renovar esta póliza.
+            </div>` : ''}
+        `;
+    } catch (err) {
+        container.innerHTML = `<p style="color:#ef4444; font-size:12px;">Error cargando cotizaciones.</p>`;
     }
 }
