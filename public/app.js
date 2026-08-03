@@ -454,6 +454,16 @@ async function loadInsurersReport() {
                         </tr>`;
                 }).join('');
 
+                // Format primas por moneda
+                let primaFormatted = '';
+                if (r.primasPorMoneda && Object.keys(r.primasPorMoneda).length > 0) {
+                    primaFormatted = Object.entries(r.primasPorMoneda)
+                        .map(([m, val]) => `$${val.toLocaleString('es-MX', { minimumFractionDigits: 2 })} ${m}`)
+                        .join(' / ');
+                } else {
+                    primaFormatted = `$${r.primaNetaTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
+                }
+
                 return `
                     <tr style="cursor:pointer;" onclick="toggleInsurerDetail('${detailId}')" title="Clic para ver detalle de cotizaciones">
                         <td>
@@ -461,7 +471,7 @@ async function loadInsurersReport() {
                             <i class="fa-solid fa-chevron-down" id="${detailId}-icon" style="margin-left:6px; font-size:10px; color:var(--text-muted); transition:transform 0.2s;"></i>
                         </td>
                         <td><span class="pill-status pill-blue">${r.cuentasPresentadas} cuenta(s)</span></td>
-                        <td style="color:var(--accent-emerald); font-weight:700;">$${r.primaNetaTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</td>
+                        <td style="color:var(--accent-emerald); font-weight:700;">${primaFormatted}</td>
                         <td><strong>${pct}%</strong> del total cotizado</td>
                     </tr>
                     <tr id="${detailId}" style="display:none;">

@@ -172,12 +172,21 @@ function extractNumber(str) {
 
 function extractInsuredName(text) {
     const patterns = [
-        /(?:ASEGURADO|Nombre del Asegurado)[:\s]+([^\n]+)/i,
-        /(?:CONTRATANTE)[:\s]+([^\n]+)/i
+        /(?:Nombre del Asegurado|Asegurado\s+Titular|Nombre\s+o\s+Raz[oó]n\s+Social|Contratante)[:\s]+([^\n]+)/i,
+        /(?:Propuesta\s+(?:de\s+Cobertura\s+)?(?:de\s+seguro\s+)?para)[:\s]+([^\n]+)/i,
+        /(?:Atenci[oó]n|At'n)[:\s]+([^\n]+)/i,
+        /\bAsegurado[:\s]+([^\n]+)/i
     ];
     for (const p of patterns) {
         const m = text.match(p);
-        if (m) return m[1].trim();
+        if (m) {
+            let candidate = m[1].trim();
+            // Filter out table headers or generic strings
+            if (/por\s+Reclamaci[oó]n|Suma\s+Asegurada|Valor\s+Asegurado|Vigencia|Deducible/i.test(candidate)) continue;
+            // Clean ending clauses
+            candidate = candidate.replace(/[\.,\s]+seg[uú]n.*$/i, '').trim();
+            if (candidate.length > 2) return candidate;
+        }
     }
     return null;
 }
@@ -209,17 +218,17 @@ function extractPrimaNeta(text) {
         // 1. Explicit Prima Neta / Prima Total Neta
         /(?:Prima\s+Neta|PRIMA\s+NETA|PRIMA\s+TOTAL\s+NETA)\s*(?:\([^\)]+\)|[¹²*])?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
 
-        // 2. Prima with footnote or currency specifier e.g., "Prima¹ (USD)" or "Prima (USD)" or "Prima (MXN)"
+        // 2. Date range followed by Prima amount e.g. "19/09/2026 – 19/09/2027 $5,585"
+        /\d{2}\/\d{2}\/\d{4}\s*[\–\-]\s*\d{2}\/\d{2}\/\d{4}\s*\$?\s*([\d,]+(?:\.\d+)?)/i,
+
+        // 3. Prima with footnote or currency specifier e.g., "Prima¹ (USD)" or "Prima (USD)"
         /Prima[¹²*\s]*(?:\(USD\)|\(MXN\)|\(PESOS\))?[:\s]*\$?\s*([\d,]{3,}(?:\.\d+)?)/i,
 
-        // 3. Table format: "Prima" header followed within ~150 characters by dollar amount $X,XXX
-        /Prima[¹²*\s]*(?:\([^\)]+\))?[\s\S]{0,150}?\$\s*([\d,]+(?:\.\d+)?)/i,
-
-        // 4. Prima Anual / Prima Cotizada / Prima Comercial / Prima Deposit
-        /(?:Prima\s+(?:Anual|Cotizada|Comercial|[UÚ]nica|Deposit|por\s+Reclamaci[oó]n))\s*(?:\([^\)]+\)|[¹²*])?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
+        // 4. Prima Anual / Prima Cotizada / Prima Deposit
+        /(?:Prima\s+(?:Anual|Cotizada|Comercial|[UÚ]nica|Deposit))\s*(?:\([^\)]+\)|[¹²*])?[:\s]*\$?\s*([\d,]+(?:\.\d+)?)/i,
 
         // 5. Generic Prima label followed by dollar amount
-        /Prima[:\s]+[^\d\n]*\$?\s*([\d,]+(?:\.\d+)?)/i
+        /\bPrima[:\s]+[^\d\n]*\$?\s*([\d,]+(?:\.\d+)?)/i
     ];
 
     for (const p of patterns) {
@@ -685,27 +694,36 @@ app.post('/api/renovaciones', upload.single('portfolioFile'), (req, res) => {
     }
 });
 
-// Insurers Market Performance Report (Cuentas presentadas y Prima Neta acumulada)
+// Insurers Market Performance Report (Cuentas presentadas y Prima Neta acumulada por moneda)
 app.get('/api/reports/insurers', (req, res) => {
     const map = {};
 
     for (const p of historicalProposals) {
         const name = p.aseguradora || 'OTRA';
+        const moneda = p.moneda || 'MXN';
+
         if (!map[name]) {
             map[name] = {
                 aseguradora: name,
                 cuentasPresentadas: 0,
                 primaNetaTotal: 0,
+                primasPorMoneda: {},
                 cotizaciones: []
             };
         }
         map[name].cuentasPresentadas += 1;
         map[name].primaNetaTotal += (p.primaNeta || 0);
+
+        if (!map[name].primasPorMoneda[moneda]) {
+            map[name].primasPorMoneda[moneda] = 0;
+        }
+        map[name].primasPorMoneda[moneda] += (p.primaNeta || 0);
+
         map[name].cotizaciones.push({
             archivo: p.archivo,
             primaNeta: p.primaNeta,
             primaTotal: p.primaTotal || 0,
-            moneda: p.moneda || 'MXN',
+            moneda: moneda,
             asegurado: p.asegurado || '—',
             coberturas: p.coberturas ? p.coberturas.filter(c => c.amparada).length : 0,
             fecha: p.fechaProcesado
