@@ -83,17 +83,76 @@ async function extractTextFromPDF(filePath) {
 // ─── Enhanced Heuristic Data Extraction ──────────────────────────────────────
 
 function identifyInsurer(text, filename) {
-    const combined = (text + ' ' + filename).toUpperCase();
-    if (combined.includes('MAPFRE')) return 'MAPFRE';
-    if (combined.includes('GNP')) return 'GNP';
-    if (combined.includes('INBURSA')) return 'INBURSA';
-    if (combined.includes('CHUBB')) return 'CHUBB';
-    if (combined.includes('TOKIO')) return 'TOKIO MARINE';
-    if (combined.includes('AXA')) return 'AXA';
-    if (combined.includes('ZURICH')) return 'ZURICH';
-    if (combined.includes('HDI')) return 'HDI';
-    if (combined.includes('AFIRME')) return 'AFIRME';
-    if (combined.includes('QUALITAS') || combined.includes('QUÁLITAS')) return 'QUALITAS';
+    // Known insurer keywords mapped to their display name
+    const insurerMap = [
+        { keys: ['MAPFRE', 'TEPEYAC'], name: 'MAPFRE' },
+        { keys: ['GNP', 'GRUPO NACIONAL PROVINCIAL', 'NACIONAL PROVINCIAL'], name: 'GNP' },
+        { keys: ['INBURSA', 'SEGUROS INBURSA'], name: 'INBURSA' },
+        { keys: ['CHUBB'], name: 'CHUBB' },
+        { keys: ['TOKIO MARINE', 'TOKIO'], name: 'TOKIO MARINE' },
+        { keys: ['AXA', 'AXA SEGUROS'], name: 'AXA' },
+        { keys: ['ZURICH'], name: 'ZURICH' },
+        { keys: ['HDI', 'HDI SEGUROS'], name: 'HDI' },
+        { keys: ['AFIRME', 'SEGUROS AFIRME'], name: 'AFIRME' },
+        { keys: ['QUALITAS', 'QUÁLITAS', 'QUALITA'], name: 'QUALITAS' },
+        { keys: ['BANORTE', 'GENERALI BANORTE', 'SEGUROS BANORTE'], name: 'BANORTE' },
+        { keys: ['SURA', 'SEGUROS SURA', 'ROYAL SUN', 'RSA'], name: 'SURA' },
+        { keys: ['ATLAS', 'SEGUROS ATLAS'], name: 'ATLAS' },
+        { keys: ['GENERAL DE SEGUROS', 'GENERAL SEGUROS'], name: 'GENERAL DE SEGUROS' },
+        { keys: ['BERKLEY', 'WR BERKLEY', 'W.R. BERKLEY'], name: 'BERKLEY' },
+        { keys: ['METLIFE', 'MET LIFE'], name: 'METLIFE' },
+        { keys: ['ALLIANZ'], name: 'ALLIANZ' },
+        { keys: ['SWISS RE', 'SWISSRE'], name: 'SWISS RE' },
+        { keys: ['GREAT AMERICAN'], name: 'GREAT AMERICAN' },
+        { keys: ['GMX', 'GMX SEGUROS'], name: 'GMX' },
+        { keys: ['COASEGURO', 'COASEGUROS'], name: 'COASEGURO' },
+        { keys: ['PRIMERO', 'PRIMERO SEGUROS'], name: 'PRIMERO SEGUROS' },
+        { keys: ['ANA', 'ANA SEGUROS', 'ANA COMPAÑIA'], name: 'ANA SEGUROS' },
+        { keys: ['ARGOS'], name: 'ARGOS' },
+        { keys: ['PREVEM'], name: 'PREVEM' },
+        { keys: ['INTERPROTECCION', 'INTER PROTECCION'], name: 'INTERPROTECCION' },
+        { keys: ['LOCKTON'], name: 'LOCKTON' },
+        { keys: ['AON'], name: 'AON' },
+        { keys: ['MARSH'], name: 'MARSH' },
+        { keys: ['WILLIS'], name: 'WILLIS' },
+    ];
+
+    const textUpper = text.toUpperCase();
+    // Clean filename: remove extension, timestamp prefix, replace separators
+    const cleanFilename = filename
+        .replace(/\.[^.]+$/, '')           // remove extension
+        .replace(/^\d+-/, '')              // remove timestamp prefix
+        .replace(/[_\-]+/g, ' ')           // replace _ and - with space
+        .toUpperCase()
+        .trim();
+
+    // 1. Try matching from the filename FIRST (most reliable when users name files like "GNP _ CotizaciÃ³n.pdf")
+    for (const ins of insurerMap) {
+        for (const key of ins.keys) {
+            if (cleanFilename.includes(key)) return ins.name;
+        }
+    }
+
+    // 2. Try matching from the PDF text content
+    for (const ins of insurerMap) {
+        for (const key of ins.keys) {
+            if (textUpper.includes(key)) return ins.name;
+        }
+    }
+
+    // 3. Fallback: try to extract a meaningful name from the filename
+    // Common patterns: "COMPANY _ description.pdf", "COMPANY - PROP 123.pdf"
+    const filenameParts = cleanFilename.split(/[\s_\-]+/);
+    if (filenameParts.length > 0 && filenameParts[0].length >= 2) {
+        // Use the first word(s) of the filename as the insurer name
+        const candidate = filenameParts[0];
+        // Avoid generic words
+        const genericWords = ['PDF', 'COTIZACION', 'COTIZACIÓN', 'PROP', 'PROPUESTA', 'POLIZA', 'PÓLIZA', 'DOC', 'DOCUMENTO', 'SEGURO', 'SEGUROS', 'ARCHIVO'];
+        if (!genericWords.includes(candidate) && candidate.length >= 3) {
+            return candidate.charAt(0) + candidate.slice(1).toLowerCase();
+        }
+    }
+
     return 'ASEGURADORA';
 }
 
