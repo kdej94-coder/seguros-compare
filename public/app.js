@@ -443,6 +443,8 @@ async function loadInsurersReport() {
                 // Build detail sub-table rows
                 const detailRows = r.cotizaciones.map((c, ci) => {
                     const fecha = c.fecha ? new Date(c.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                    const escapedArchivo = (c.archivo || '').replace(/'/g, "\\'");
+                    const itemId = c.id || '';
                     return `
                         <tr style="background:#f8fafc;">
                             <td style="padding-left:30px; font-size:11px;">${ci + 1}.</td>
@@ -451,6 +453,11 @@ async function loadInsurersReport() {
                             <td style="font-size:11px; font-weight:600; color:var(--accent-indigo);">$${c.primaNeta ? c.primaNeta.toLocaleString('es-MX', {minimumFractionDigits:2}) : '0.00'} ${c.moneda || 'MXN'}</td>
                             <td style="font-size:11px;">${c.coberturas || 0} detectadas</td>
                             <td style="font-size:11px; color:var(--text-muted);">${fecha}</td>
+                            <td style="font-size:11px; text-align:center;">
+                                <button onclick="event.stopPropagation(); deleteCotizacionItem('${itemId}', '${escapedArchivo}', '${c.primaNeta || 0}')" style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; border-radius:4px; padding:3px 8px; font-size:10px; cursor:pointer; font-weight:600; transition:all 0.15s;" title="Eliminar esta cotización del historial">
+                                    <i class="fa-solid fa-trash-can"></i> Eliminar
+                                </button>
+                            </td>
                         </tr>`;
                 }).join('');
 
@@ -490,6 +497,7 @@ async function loadInsurersReport() {
                                             <th style="padding:6px 8px; text-align:left; font-size:10px;">Prima Neta</th>
                                             <th style="padding:6px 8px; text-align:left; font-size:10px;">Coberturas</th>
                                             <th style="padding:6px 8px; text-align:left; font-size:10px;">Fecha Procesado</th>
+                                            <th style="padding:6px 8px; text-align:center; font-size:10px;">Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -521,6 +529,27 @@ function toggleInsurerDetail(detailId) {
     } else {
         row.style.display = 'none';
         if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+async function deleteCotizacionItem(id, archivo, primaNeta) {
+    if (!confirm(`¿Está seguro de que desea eliminar permanentemente la cotización "${archivo}" del historial?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/proposals/item/${id}?archivo=${encodeURIComponent(archivo)}&primaNeta=${primaNeta}`, {
+            method: 'DELETE'
+        });
+        const data = await res.json();
+        alert(data.mensaje || 'Cotización eliminada.');
+        loadInsurersReport();
+        loadHistory();
+        loadData();
+        loadCartera();
+    } catch (err) {
+        console.error('Error eliminando cotización:', err);
+        alert('Error al eliminar la cotización.');
     }
 }
 

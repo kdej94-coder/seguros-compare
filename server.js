@@ -720,6 +720,7 @@ app.get('/api/reports/insurers', (req, res) => {
         map[name].primasPorMoneda[moneda] += (p.primaNeta || 0);
 
         map[name].cotizaciones.push({
+            id: p.id || ('prop-' + Math.random().toString(36).substr(2, 9)),
             archivo: p.archivo,
             primaNeta: p.primaNeta,
             primaTotal: p.primaTotal || 0,
@@ -739,6 +740,51 @@ app.get('/api/reports/insurers', (req, res) => {
         totalCuentasGeneral,
         totalPrimaGeneral
     });
+});
+
+// Delete a specific proposal entry from history
+app.delete('/api/proposals/item/:id', (req, res) => {
+    const targetId = req.params.id;
+    const fileToDelete = req.query.archivo;
+    const primaToDelete = req.query.primaNeta ? parseFloat(req.query.primaNeta) : null;
+    let foundCount = 0;
+
+    // 1. Remove from current session proposals
+    proposals = proposals.filter(p => p.id !== targetId && p.archivo !== fileToDelete);
+
+    // 2. Remove from comparacionesDb entries
+    for (let c = comparacionesDb.length - 1; c >= 0; c--) {
+        const comp = comparacionesDb[c];
+        if (comp.proposals) {
+            const beforeLen = comp.proposals.length;
+            comp.proposals = comp.proposals.filter(p => {
+                if (p.id && p.id === targetId) return false;
+                if (fileToDelete && p.archivo === fileToDelete && (primaToDelete === null || p.primaNeta === primaToDelete)) return false;
+                return true;
+            });
+
+            if (comp.proposals.length < beforeLen) {
+                foundCount += (beforeLen - comp.proposals.length);
+                comp.totalProposals = comp.proposals.length;
+                if (comp.proposals.length === 0) {
+                    comparacionesDb.splice(c, 1);
+                } else {
+                    comp.recommendation = evaluateBestProposal(comp.proposals);
+                }
+            }
+        }
+    }
+
+    // 3. Rebuild historicalProposals
+    historicalProposals = [];
+    for (const comp of comparacionesDb) {
+        if (comp.proposals) historicalProposals.push(...comp.proposals);
+    }
+
+    saveComparaciones();
+
+    console.log(`[DELETE-ITEM] Deleted proposal ${targetId} / ${fileToDelete}. Total removed: ${foundCount}`);
+    res.json({ mensaje: `Cotización "${fileToDelete || targetId}" eliminada correctamente del historial.` });
 });
 
 // ─── Auto-save helper ────────────────────────────────────────────────────────
