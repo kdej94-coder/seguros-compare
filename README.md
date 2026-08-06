@@ -1,4 +1,4 @@
-# SegurosCompare 🛡️
+# SegurosCompare 
 > **Sistema Automatizado de Análisis y Comparación de Cotizaciones de Seguros**
 
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-brightgreen.svg)](https://nodejs.org/)
@@ -35,7 +35,7 @@
   - [7.2 Requerimientos Futuros](#72-requerimientos-futuros)
 - [8. Producto y Enlaces](#8-producto-y-enlaces)
 
-> 🔗 **Enlaces Externos y Documentación Adicional:**
+>  **Enlaces Externos y Documentación Adicional:**
 > - [Wiki del Repositorio en GitHub](https://github.com/kdej94-coder/seguros-compare/wiki)
 > - [Documentación en ReadTheDocs.io](https://readthedocs.org/)
 
@@ -132,12 +132,12 @@ El proyecto cuenta con una suite de pruebas unitarias automatizadas en `test/app
   ```
 - **Resultado esperado:**
   ```text
-  🧪 Ejecutando Pruebas Unitarias de SegurosCompare...
-    ✅ Test 1: Extracción de coberturas Regex superada.
-    ✅ Test 2: Motor de Scoring ("Mejor Opción") superado.
-    ✅ Test 3: Autenticación de usuario superada.
+   Ejecutando Pruebas Unitarias de SegurosCompare...
+     Test 1: Extracción de coberturas Regex superada.
+     Test 2: Motor de Scoring ("Mejor Opción") superado.
+     Test 3: Autenticación de usuario superada.
 
-  🎉 ¡TODAS LAS PRUEBAS UNITARIAS PASARON EXITOSAMENTE (3/3)!
+  🎉¡TODAS LAS PRUEBAS UNITARIAS PASARON EXITOSAMENTE (3/3)!
   ```
 
 ### 3.3 Implementación en Producción (Nube Render / Heroku / Local)
@@ -277,9 +277,9 @@ gantt
 
 ## 8. Producto y Enlaces
 
-- **🌐 Producto Desplegado en la Nube (Producción):** [https://seguros-compare.onrender.com](https://seguros-compare.onrender.com)
+- ** Producto Desplegado en la Nube (Producción):** [https://seguros-compare.onrender.com](https://seguros-compare.onrender.com)
 - **Repositorio Oficial en GitHub:** [https://github.com/kdej94-coder/seguros-compare.git](https://github.com/kdej94-coder/seguros-compare.git)
-- **🎬 Video de Demostración:** Disponible en la documentación del entregable integrador.
+  
 
 ---
 
